@@ -9,18 +9,18 @@ flowchart TD
     PL -- "no" --> P1
     PL -- "yes" --> BK["back up ~/.claude<br/>and the vault folder"]
     BK --> P2["2 folders<br/>Projects, vault, git init"]
-    P2 --> P3["3 ~/.claude stage 1<br/>CLAUDE.md, style, agents"]
+    P2 --> P3["3 ~/.claude stage 1<br/>CLAUDE.md, style, agents, Bases"]
     P3 --> S2{"stage 2<br/>chosen?"}
-    S2 -- "yes" --> P4["4 hooks, capabilities,<br/>start skill"]
+    S2 -- "yes" --> P4["4 hooks, scripts,<br/>capabilities, skills"]
     S2 -- "no" --> P5
-    P4 --> P5["5 verify: placeholders,<br/>@ paths, /memory, hook fixtures"]
+    P4 --> P5["5 verify: placeholders, @ paths,<br/>/memory, hook and script tests"]
     P5 --> RP["report + commit"]
 ```
 
 ## Ground rules
 
 - Never overwrite an existing file without a backup. Before phase 3, copy any existing `~/.claude/` to `~/.claude.bak-<YYYY-MM-DD>/`, and do the same for a vault folder you would write into.
-- Every `<<PLACEHOLDER>>` in `payload/` is filled from the interview; machine facts (`<<OS>>`, `<<SHELL>>`, `<<RUNTIMES>>` and the like) come from the phase 0 inventory, and any placeholder that neither covers is one more interview question. Never leave one in an installed file; `rg '<<[A-Z_]+>>' ~/.claude <vault>` must return nothing at the end.
+- Every `<<PLACEHOLDER>>` in `payload/` is filled from the interview; machine facts come from the phase 0 inventory (`<<HARDWARE>>`, `<<OS>>`, `<<SHELL>>`, `<<SHELL_CONFIG_PATH>>`, `<<PACKAGE_MANAGERS>>`, `<<FIRST_PACKAGE_MANAGER>>`, `<<SCRIPT_LANGUAGE>>`, `<<RUNTIMES>>`, `<<SHELL_QUIRKS>>`, `<<OTHER_PATHS>>`, `<<EDITORS>>`; confirm them with the user in one question), and any placeholder that neither covers is one more interview question. Never leave one in an installed file; `rg '<<[A-Z_]+>>' ~/.claude <vault>` must return nothing at the end.
 - Text in `payload/` that names Joris, his clients, his servers or his tools is an example of the pattern. Replace it with your user's equivalent or delete it. Do not install another person's rules verbatim.
 - Show the plan (a table: path, action, source) and get a yes before phase 3. After that, reversible local work needs no further confirmation.
 - Use the package managers already on the machine. Ask before installing anything system-wide.
@@ -43,7 +43,8 @@ Ask with the AskUserQuestion tool, at most 4 questions per call, a recommended o
 | `<<NAME>>` | What should agents call you? |
 | `<<ROLE>>` | What do you do (one line), and what do you mostly build? |
 | `<<STACK>>` | Main languages, frameworks, package managers, in order of preference |
-| `<<REPLY_LANGUAGE>>` | Language for replies; language for code and commit messages |
+| `<<REPLY_LANGUAGE>>`, `<<CODE_LANGUAGE>>`, `<<CLIENT_LANGUAGE>>` | Language for replies; for code and commit messages; for UI strings and anything a client reads |
+| `<<REPLY_PREFERENCES>>`, `<<PATTERNS>>`, `<<HARD_NOS>>` | How replies should read; working patterns the agent should compensate for (e.g. loses context between sessions); things an agent must never do |
 | `<<VAULT>>` | Absolute path of the vault: an existing one, or a new one (recommend `~/Obsidian/<Name>`: **no spaces** in the path, so `@` imports resolve cleanly) |
 | `<<AGENT_DIR>>` | Folder in the vault that holds the prompt files (recommend `Agent`, no spaces) |
 | `<<PROJECTS>>` | Code folder (recommend `~/Projects`, one checkout per repo, flat) |
@@ -76,27 +77,38 @@ Ask with the AskUserQuestion tool, at most 4 questions per call, a recommended o
 | source | destination | adapt |
 |---|---|---|
 | `payload/vault/Agent/*.md` | `<<VAULT>>/<<AGENT_DIR>>/` | fill placeholders; `machine-context.md` from the phase 0 inventory |
+| `payload/vault/Projects/*.base`, `Network/`, `Timeline/` | same folders in the vault | Bases views; adjust `file.inFolder("...")` if the user's folders have other names |
 | `payload/claude/CLAUDE.md` | `~/.claude/CLAUDE.md` | the `@` lines point at `<<VAULT>>/<<AGENT_DIR>>/`; merge with an existing file, keep its user rules |
 | `payload/claude/output-styles/operational-spec.md` | `~/.claude/output-styles/` | name and language |
-| `payload/claude/agents/*.md` | `~/.claude/agents/` | models: keep the role split (cheap model for read-only search, strongest for execution and verification) |
-| `payload/claude/settings.json` | merge into `~/.claude/settings.json` | never replace an existing file; merge keys with `jq` |
+| `payload/claude/agents/*.md` | `~/.claude/agents/` | six workers; keep the role split (cheap model for read-only search and web research, strongest for execution, review and verification) |
+| `payload/claude/skills/start/` | `~/.claude/skills/start/` | the session opener |
+| `payload/claude/settings.json` | merge into `~/.claude/settings.json` | never replace an existing file; merge keys with `jq`. At stage 1 keep only `outputStyle` and `permissions`; the `hooks` block comes in phase 4 |
 
-Then `git init ~/.claude` with a `.gitignore` that excludes everything except `CLAUDE.md`, `settings.json`, `agents/`, `skills/`, `output-styles/`, `hooks/`, `capabilities/`, `system-instructions/` (Claude Code writes caches, transcripts and history there too; those stay out of git).
+Then `git init ~/.claude` with a `.gitignore` that excludes everything except `CLAUDE.md`, `settings.json`, `dispatch-protocol.md`, `agents/`, `skills/`, `output-styles/`, `hooks/`, `capabilities/`, `scripts/` (Claude Code writes caches, transcripts and history there too; those stay out of git, and so does `~/.claude/scripts/config.json` if the user prefers).
 
 ## Phase 4: stage 2 (only if chosen)
 
-- `payload/claude/hooks/*.sh` → `~/.claude/hooks/`, `chmod +x`, and wire them in `settings.json` as shown in `payload/claude/settings.json`. Set `VAULT_ROOT` in the hook to `<<VAULT>>`.
-- `payload/claude/capabilities/` → `~/.claude/capabilities/`: one file per service from `<<SERVICES>>`, filled from `_TEMPLATE.md`, each with a `health` line you actually ran.
-- `payload/claude/skills/start/` → `~/.claude/skills/start/`.
+Needs `bun` (scripts) and `jq` (hooks). Ask before installing either.
+
+| source | destination | adapt |
+|---|---|---|
+| `payload/claude/hooks/` (with `tests/`) | `~/.claude/hooks/` | `chmod +x *.sh tests/*.sh`; replace `<<VAULT>>` in `vault-write-gate.sh`; in `outbound-ask.sh`, set the matcher list to the user's message-sending tools |
+| `hooks` block of `payload/claude/settings.json` | merge into `~/.claude/settings.json` | paths stay `~/.claude/hooks/...` |
+| `payload/claude/scripts/` | `~/.claude/scripts/` | copy `config.example.json` to `config.json` with `<<VAULT>>` and `<<PROJECTS>>` filled; tests stay alongside |
+| `payload/claude/capabilities/` | `~/.claude/capabilities/` | one file per service from `<<SERVICES>>`, filled from `_TEMPLATE.md`, each with a `health` line you actually ran |
+| `payload/claude/skills/{retro,memory-gc,prompt-audit}/` | `~/.claude/skills/` | none |
+| `payload/claude/dispatch-protocol.md` | `~/.claude/dispatch-protocol.md` | add one routing line to `CLAUDE.md`: "An agent dispatched to run unattended: `dispatch-protocol.md`" |
+
+What each script answers: `payload/claude/scripts/README.md`.
 
 ## Phase 5: verify (each check could fail; report its output)
 
-1. `rg '<<[A-Z_]+>>' ~/.claude <<VAULT>>` → no hits.
+1. `rg '<<[A-Z_]+>>' ~/.claude <<VAULT>> --glob '!*.test.*' --glob '!tests/'` → no hits.
 2. Every `@` path in `~/.claude/CLAUDE.md` exists: `rg -o '^@(\S+)' -r '$1' ~/.claude/CLAUDE.md | sed "s|^~|$HOME|" | xargs -I{} test -f {} && echo ok`.
 3. Ask the user to start a fresh `claude` session in `<<PROJECTS>>` and run `/memory`: the imported vault files must be listed. Then ask it "which agent types can you spawn?": the typed workers must be named.
-4. Hooks (stage 2): pipe a fixture into each one and show the decision, for example
-   `echo '{"tool_name":"Agent","tool_input":{"subagent_type":"general-purpose"}}' | ~/.claude/hooks/no-general-purpose-agent.sh` → a `deny` JSON.
-5. `git -C ~/.claude status` and `git -C <<VAULT>> status`: commit the setup by path, one commit each.
+4. Stage 2: `bash ~/.claude/hooks/tests/run-all.sh` → last line `failing: 0`; `bun test ~/.claude/scripts` → `0 fail`; `bun ~/.claude/scripts/doctor.ts` → one row per capability; `bun ~/.claude/scripts/vault-lint.ts --summary` → one summary line.
+5. Obsidian: open `Projects/index.base`; the user's projects are listed.
+6. `git -C ~/.claude status` and `git -C <<VAULT>> status`: commit the setup by path, one commit each.
 
 ## Report
 

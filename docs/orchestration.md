@@ -111,10 +111,10 @@ Joris's implementation is three repos (a Laravel buffer, a Laravel router, a Bun
 
 ## 3.6 Seeing what happened: trace and health
 
-- **Session trace**: a parser over `~/.claude/projects/**/*.jsonl` (and subagent transcripts) producing events, stats and a per-project brief. Joris's `claude-trace` and the Fleet Trace app show every run, what it changed, and what is waiting on him.
-- **Doctor**: reads the `health` line of every capability file at session start and prints only the red rows, so an agent knows a service is down before it tries it.
+- **Session trace**: a parser over `~/.claude/projects/**/*.jsonl` (and subagent transcripts) producing events, stats and a per-project brief. Here: `bun ~/.claude/scripts/trace.ts sessions --since 7d` (per-session tool calls, errors, hook denials, interrupts, rejections) and `trace.ts clusters` (recurring error signatures, the input of the `retro` skill). Joris's own `claude-trace` and Fleet Trace app add a UI over the same data.
+- **Doctor**: reads the `health` line of every capability file at session start and prints only the red rows, so an agent knows a service is down before it tries it. Here: `~/.claude/scripts/doctor.ts`, run by the `session-start-doctor.sh` hook.
 - **Estate status**: one command that reports the health of every deployed service; agents run it before any curl or ssh, because ad-hoc probing produced false alarms.
-- **Agent queue**: a script lists open tracker lines tagged `#agent-ready` with a `done when:` line, sorted by priority. That list is what an unattended agent may pick up.
+- **Agent queue**: a script lists open tracker lines tagged `#agent-ready` with a `done when:` line, sorted by priority. That list is what an unattended agent may pick up. Here: `bun ~/.claude/scripts/agent-queue.ts`.
 
 ## 3.7 What to build first, in order
 

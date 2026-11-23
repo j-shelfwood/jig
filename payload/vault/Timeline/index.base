@@ -1,0 +1,13 @@
+filters:
+  and:
+    - type == "daily-note"
+
+views:
+  - type: table
+    name: Days
+    order:
+      - file.name
+      - date
+    sort:
+      - property: date
+        direction: DESC

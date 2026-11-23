@@ -1,0 +1,19 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Repository consistency
+        run: bun scripts/check.ts
+      - name: Script tests
+        run: bun test payload/claude/scripts
+      - name: Hook tests
+        run: bash payload/claude/hooks/tests/run-all.sh

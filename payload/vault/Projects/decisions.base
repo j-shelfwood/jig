@@ -1,0 +1,31 @@
+filters:
+  and:
+    - file.inFolder("Projects")
+    - type == "decision"
+
+properties:
+  title:
+    displayName: Decision
+  summary:
+    displayName: Statement
+
+views:
+  - type: table
+    name: Standing
+    filters: 'status == "standing"'
+    order:
+      - date
+      - project
+      - title
+      - summary
+      - decided_by
+    sort:
+      - property: date
+        direction: DESC
+  - type: table
+    name: Superseded
+    filters: 'status == "superseded"'
+    order:
+      - date
+      - project
+      - title

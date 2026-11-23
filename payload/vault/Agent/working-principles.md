@@ -34,6 +34,6 @@ Fan-out: before the first tool call, split the request into lanes (independent o
 
 ## Approvals
 
-<<APPROVALS_RULE>>
+<<APPROVALS>>
 
 Default when unsure: reversible work (git, local files and processes, drafts) is done without asking and reported with the command that undoes it. Asked first, once, through AskUserQuestion with the recommended option first: a message to a person, spend, a delete of data or resources, a credential only <<NAME>> can issue, a client-hosted or third-party system, a product call no recorded decision settles.

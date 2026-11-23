@@ -1,0 +1,15 @@
+views:
+  - type: table
+    name: People
+    filters: 'type == "contact" && status != "archived"'
+    order:
+      - file.name
+      - organization
+      - role
+      - status
+  - type: table
+    name: Organizations
+    filters: 'type == "organization" && status != "archived"'
+    order:
+      - file.name
+      - status

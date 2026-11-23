@@ -31,6 +31,8 @@ flowchart TD
 | capabilities | `~/.claude/capabilities/<service>.md` | when the service is touched | how to reach one service: CLI/MCP/API, which identity, where the secret is (by reference), a health command, known failures |
 | typed agents | `~/.claude/agents/<name>.md` | when spawned | one role, a tool allowlist, a model, a fixed report format |
 | hooks | `~/.claude/hooks/*.sh` wired in `settings.json` | on every matching tool call | rules that must hold even when the model forgets them |
+| scripts | `~/.claude/scripts/*.ts` (bun) | run by skills, hooks or you | the agent queue, vault lint, capability doctor and transcript trace (`payload/claude/scripts/README.md`) |
+| dispatch contract | `~/.claude/dispatch-protocol.md` | pasted into the brief of any agent that runs unattended | how to behave when nobody watches: no approval-needing commands, fixed report, vault write-back |
 | auto-memory | `~/.claude/projects/<slug>/memory/` | per working directory | facts about how to work: tool quirks, access paths, preferences |
 | vault | Obsidian | read through files or Bases | project state: tasks, decisions, hand-offs, people, dated analyses |
 
