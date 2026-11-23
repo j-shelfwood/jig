@@ -13,10 +13,6 @@
       "Bash(gh pr view:*)",
       "Bash(gh run list:*)"
     ],
-    "ask": [
-      "Bash(git reset --hard:*)",
-      "Bash(git clean:*)"
-    ],
     "deny": [
       "Read(**/.env)",
       "Read(**/.env.production)",
@@ -27,15 +23,65 @@
     "PreToolUse": [
       {
         "matcher": "Agent",
-        "hooks": [{ "type": "command", "command": "~/.claude/hooks/no-general-purpose-agent.sh" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/no-general-purpose-agent.sh"
+          }
+        ]
       },
       {
         "matcher": "Edit|Write|MultiEdit",
-        "hooks": [{ "type": "command", "command": "~/.claude/hooks/vault-write-gate.sh" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/vault-write-gate.sh"
+          }
+        ]
       },
       {
         "matcher": "Bash",
-        "hooks": [{ "type": "command", "command": "~/.claude/hooks/git-push-guard.sh" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/git-push-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/destructive-git-gate.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*__(send_.*|reply.*|create_post|dm|create_message|post_message)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/outbound-ask.sh"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "operator",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/operator-done-gate.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/session-start-doctor.sh",
+            "timeout": 30
+          }
+        ]
       }
     ]
   }

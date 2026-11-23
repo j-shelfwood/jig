@@ -7,9 +7,10 @@
 # Exempt: a session whose cwd is inside the vault, and vault-scribe itself (payload field agent_type).
 # Mode: VAULT_WRITE_GATE_MODE=warn (default, adds context, the call proceeds) or deny.
 # Wiring: settings.json hooks.PreToolUse, matcher "Edit|Write|MultiEdit".
-# Test: echo '{"tool_name":"Write","cwd":"/tmp","tool_input":{"file_path":"'"$HOME"'/Obsidian/Vault/x.md"}}' | ./vault-write-gate.sh
+# Test: bash tests/vault-write-gate.test.sh
 INPUT=$(cat)
 VAULT="${VAULT_ROOT:-<<VAULT>>}"
+VAULT="${VAULT/#\~/$HOME}"; VAULT="${VAULT%/}"  # accept ~/... and a trailing slash
 MODE="${VAULT_WRITE_GATE_MODE:-warn}"
 TARGET=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""' 2>/dev/null) || exit 0
 CWD=$(echo "$INPUT" | jq -r '.cwd // ""')
