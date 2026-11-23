@@ -1,6 +1,6 @@
 ---
 name: start
-description: Session driver for one project: read what the last session left and what came in (handoff, tracker, git, open PRs and CI, the #agent-ready queue), propose how the open items split into parallel lanes for typed workers, run the approved lanes, and review each result until it meets the bar (tests ran, diff in scope, claims re-derived). Use at the first turn of a project session and for "start", "where were we", "pick up where I left off", "what's open here", "work the queue", "next item", "fan out".
+description: Session driver for one project. Reads what the last session left and what came in (handoff, tracker, git, open PRs and CI, the #agent-ready queue), propose how the open items split into parallel lanes for typed workers, run the approved lanes, and review each result until it meets the bar (tests ran, diff in scope, claims re-derived). Use at the first turn of a project session and for "start", "where were we", "pick up where I left off", "what's open here", "work the queue", "next item", "fan out".
 ---
 
 # Start: discover, propose, orchestrate, review
