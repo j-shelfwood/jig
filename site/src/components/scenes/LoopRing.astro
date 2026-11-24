@@ -1,0 +1,101 @@
+---
+// LoopRing: the hero visual. The steps of docs/method.md around a ring; a marker travels the loop and the
+// centre names what each step leaves behind. Each step links to its section of the method. The number of
+// nodes, their names and the centre text all come from the generated kit (site/scripts/kit/method.ts).
+type Step = { n: number; name: string; href: string; leaves: string };
+interface Props { steps: Step[] }
+const { steps } = Astro.props;
+const N = steps.length;
+const S = 2.4; // seconds per step
+const T = N * S;
+const p = 100 / N;
+const at = (i: number) => {
+  const a = (-90 + (i * 360) / N) * (Math.PI / 180);
+  return `left:${(50 + 41 * Math.cos(a)).toFixed(2)}%;top:${(50 + 41 * Math.sin(a)).toFixed(2)}%`;
+};
+// Keyframes depend on the number of steps, so they are written here rather than in a stylesheet.
+const css = `
+.motion .ring .rn, .motion .ring .ring__say, .motion .ring .ring__orbit { animation-play-state: paused; animation-iteration-count: infinite; }
+.motion .ring.is-playing .rn, .motion .ring.is-playing .ring__say, .motion .ring.is-playing .ring__orbit { animation-play-state: running; }
+.motion .ring .ring__orbit { animation: ring-spin ${T}s linear infinite paused; opacity: 1; }
+.motion .ring .rn { animation-name: ring-node; animation-duration: ${T}s; animation-timing-function: ease-out; }
+.motion .ring .ring__say { animation-name: ring-say; animation-duration: ${T}s; animation-timing-function: linear; }
+.motion .ring.is-playing .ring__idle { opacity: 0; }
+@keyframes ring-spin { to { transform: rotate(360deg); } }
+@keyframes ring-node {
+  0% { --_edge: var(--talos-foreground); --_fill: var(--talos-foreground); color: var(--talos-background); }
+  ${(p * 0.9).toFixed(2)}% { --_edge: var(--talos-foreground); --_fill: var(--talos-foreground); color: var(--talos-background); }
+  ${p.toFixed(2)}%, 100% { --_edge: var(--talos-edge-default); --_fill: hsl(0 0% 4% / 0.92); color: var(--talos-foreground); }
+}
+@keyframes ring-say {
+  0% { opacity: 0; transform: translateY(4px); }
+  ${(p * 0.12).toFixed(2)}% { opacity: 1; transform: none; }
+  ${(p * 0.85).toFixed(2)}% { opacity: 1; transform: none; }
+  ${p.toFixed(2)}%, 100% { opacity: 0; }
+}`;
+---
+
+<div class="ring" data-scene data-loop role="group" aria-label={`The loop: ${steps.map((s) => s.name).join(", ")}`}>
+  <svg class="ring__track" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="41" />
+    {steps.map((_, i) => {
+      const a = (-90 + ((i + 0.5) * 360) / N) * (Math.PI / 180);
+      const x = 50 + 41 * Math.cos(a), y = 50 + 41 * Math.sin(a);
+      const deg = -90 + ((i + 0.5) * 360) / N + 90;
+      return <path class="ring__tick" d="M -1.4 -1.2 L 0 0 L -1.4 1.2" transform={`translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${deg - 90 + 90})`} />;
+    })}
+  </svg>
+  <div class="ring__orbit" aria-hidden="true"><span></span></div>
+  <div class="ring__centre">
+    <div class="ring__idle">
+      <span class="label">{N} steps, one loop</span>
+      <p>Every request ends as a checked, recorded result. The retro feeds the next intake.</p>
+    </div>
+    {steps.map((s, i) => (
+      <div class="ring__say" style={`animation-delay:${(i * S).toFixed(2)}s`} aria-hidden="true">
+        <span class="label">{String(s.n).padStart(2, "0")} {s.name} leaves behind</span>
+        <p set:html={s.leaves} />
+      </div>
+    ))}
+  </div>
+  {steps.map((s, i) => (
+    <a class="rn talos-chamfer talos-chamfer--btn" href={s.href} style={`${at(i)};animation-delay:${(i * S).toFixed(2)}s`}>
+      <span class="rn__n">{String(s.n).padStart(2, "0")}</span>{s.name}
+    </a>
+  ))}
+  <style is:inline set:html={css}></style>
+</div>
+
+<style>
+  .ring { position: relative; width: min(100%, 27rem); aspect-ratio: 1; margin-inline: auto; }
+  .ring__track { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .ring__track circle { fill: none; stroke: var(--talos-edge-default); stroke-width: 0.35; stroke-dasharray: 0.6 1.2; }
+  .ring__tick { fill: none; stroke: var(--talos-muted-foreground); stroke-width: 0.35; }
+  .ring__orbit { position: absolute; inset: 9%; opacity: 0; pointer-events: none; }
+  .ring__orbit span {
+    position: absolute; left: 50%; top: 0; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%;
+    background: var(--talos-foreground); box-shadow: 0 0 12px hsl(var(--talos-foreground-hsl) / 0.8);
+  }
+  .ring__centre { position: absolute; inset: 27%; display: grid; place-items: center; text-align: center; }
+  .ring__centre > * { grid-area: 1 / 1; display: grid; gap: 0.45rem; justify-items: center; }
+  .ring__centre p { margin: 0; text-wrap: balance; font-family: var(--talos-font-body); font-size: clamp(0.72rem, 2.6vw, 0.88rem); line-height: 1.45; color: hsl(var(--talos-foreground-hsl) / 0.88); }
+  .ring__say { opacity: 0; }
+  .ring__say :global(code) { font-size: 0.85em; background: var(--talos-surface-2); padding: 0.05em 0.3em; border-radius: var(--talos-radius-sm); }
+  .rn {
+    --_edge: var(--talos-edge-default);
+    --_fill: hsl(0 0% 4% / 0.92);
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: inline-flex; gap: 0.4rem; align-items: baseline;
+    padding: 0.4rem 0.65rem;
+    font-size: clamp(0.58rem, 2.2vw, 0.7rem);
+    letter-spacing: var(--talos-tracking-hud-tight);
+    text-transform: uppercase;
+    color: var(--talos-foreground);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .rn__n { color: var(--talos-muted-foreground); font-size: 0.85em; }
+  .rn:hover, .rn:focus-visible { --_edge: var(--talos-foreground); }
+  .rn:focus-visible { outline: 2px solid var(--talos-foreground); outline-offset: 3px; }
+</style>

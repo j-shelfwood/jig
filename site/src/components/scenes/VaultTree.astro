@@ -1,0 +1,38 @@
+---
+// VaultTree: the file tree of the demo vault in a pane, from the generated file list. `open` marks the
+// note shown beside it; `fresh` files fade in at `freshAt` ms (a note the scene creates).
+import { Icon } from "astro-icon/components";
+interface Props { files: string[]; open: string; fresh?: string[]; freshAt?: number }
+const { files, open, fresh = [], freshAt = 0 } = Astro.props;
+type Dir = { name: string; dirs: Dir[]; files: string[] };
+const root: Dir = { name: "", dirs: [], files: [] };
+for (const f of [...files].sort()) {
+  const parts = f.split("/");
+  let d = root;
+  for (const p of parts.slice(0, -1)) {
+    let next = d.dirs.find((x) => x.name === p);
+    if (!next) d.dirs.push((next = { name: p, dirs: [], files: [] }));
+    d = next;
+  }
+  d.files.push(f);
+}
+---
+<nav class="pane__tree" aria-label="Demo vault files">
+  <ul>
+    {(function walk(d: Dir): any {
+      return [
+        ...d.dirs.map((x) => (
+          <li>
+            <span class="f"><Icon name="lucide:folder-open" aria-hidden="true" />{x.name}</span>
+            <ul>{walk(x)}</ul>
+          </li>
+        )),
+        ...d.files.map((f) => (
+          <li class:list={[fresh.includes(f) && "a a-fade"]} style={fresh.includes(f) ? `--d:${freshAt}ms` : undefined}>
+            <span class:list={["f", f === open && "is-open"]}><Icon name="lucide:file-text" aria-hidden="true" />{f.split("/").pop()!.replace(/\.md$/, "")}</span>
+          </li>
+        )),
+      ];
+    })(root)}
+  </ul>
+</nav>

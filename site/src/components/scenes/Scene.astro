@@ -1,0 +1,46 @@
+---
+// Scene: one idea of the method. The caption column is the step's own text from docs/method.md (through
+// site/src/generated/kit.json); the stage slot holds the animated replay. Plays when scrolled into view
+// (src/scripts/scenes.ts); the replay button restarts it.
+import { Icon } from "astro-icon/components";
+
+type Step = { n: number; name: string; href: string; body: string; leaves: string; prevents: string; kit: string };
+interface Props {
+  id: string;
+  /** One or more method steps this scene shows (Intake and Shape share one). */
+  steps: Step[];
+  title?: string;
+  /** Show the "Leaves behind / Prevents / In the kit" list of the last step. */
+  meta?: boolean;
+}
+const { id, steps, title, meta = true } = Astro.props;
+const last = steps[steps.length - 1]!;
+const heading = title ?? steps.map((s) => s.name).join(" + ");
+const eyebrow = steps.map((s) => String(s.n).padStart(2, "0")).join(" + ");
+---
+
+<section class="scene" id={id} data-scene aria-labelledby={`${id}-h`}>
+  <div class="scene__text">
+    <span class="talos-eyebrow">// Step {eyebrow}</span>
+    <h2 id={`${id}-h`}>{heading}</h2>
+    {steps.map((s) => <p set:html={s.body} />)}
+    {
+      meta && (
+        <dl class="scene__meta">
+          <div><dt>Leaves behind</dt><dd set:html={last.leaves} /></div>
+          <div><dt>Prevents</dt><dd set:html={last.prevents} /></div>
+          <div><dt>In the kit</dt><dd set:html={last.kit} /></div>
+        </dl>
+      )
+    }
+    <div class="scene__actions">
+      <a href={last.href}>{steps.length > 1 ? "These steps" : "This step"} in the method</a>
+      <button type="button" class="replay" data-replay aria-controls={`${id}-stage`}>
+        <Icon name="lucide:rotate-ccw" aria-hidden="true" /> Replay
+      </button>
+    </div>
+  </div>
+  <div class="scene__stage" id={`${id}-stage`}>
+    <slot />
+  </div>
+</section>

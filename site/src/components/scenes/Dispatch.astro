@@ -1,0 +1,75 @@
+---
+// Scene: Dispatch. The main agent turns the queue into lanes, one message, typed workers in parallel; each
+// lane returns a short report. Lane tasks are the lines agent-queue.ts listed; worker, model and tools come
+// from payload/claude/agents. Below: the whole roster.
+import { Icon } from "astro-icon/components";
+import Scene from "./Scene.astro";
+import { workerIcon } from "./workerIcon";
+import type { Kit } from "../../../scripts/gen";
+interface Props { kit: Kit }
+const { kit } = Astro.props;
+const d = kit.scenes.dispatch;
+const ready = d.lanes.filter((l) => l.worker === "operator").length;
+const T = 1500;
+const durs = [2200, 3600, 4400, 2900];
+const end = T + 900 + Math.max(...d.lanes.map((_, i) => i * 120 + durs[i % durs.length]!));
+---
+<Scene id="dispatch" steps={[d.step]}>
+  <div class="win talos-chamfer">
+    <div class="win__bar"><Icon name="lucide:terminal" aria-hidden="true" /><span>main agent · {kit.demo.project}</span></div>
+    <div class="win__body">
+      <span class="tl"><span class="you">&gt;</span> <span class="a a-type" style={`--d:200ms;--t:900ms;--steps:${d.prompt.length}`}>{d.prompt}</span></span>
+      <span class="tl tl--hit a a-fade" style={`--d:${T}ms`}>● {ready} ready tasks from agent-queue.ts, {d.lanes.length - ready} lookups. {d.lanes.length} lanes, one message; each editing lane in its own worktree.</span>
+      <ol class="lanes">
+        {d.lanes.map((l, i) => (
+          <li class="lane talos-chamfer a a-fade" style={`--d:${T + 500 + i * 120}ms`}>
+            <div class="lane__head">
+              <span class="chip talos-chamfer talos-chamfer--flag chip--solid"><Icon name={workerIcon(l.worker)} aria-hidden="true" />{l.worker}</span>
+              <span class="lane__model">{l.model}</span>
+            </div>
+            <p class="lane__task">{l.task}</p>
+            <span class="lane__bar" aria-hidden="true"><span class="a a-bar" style={`--d:${T + 900 + i * 120}ms;--t:${durs[i % durs.length]}ms`}></span></span>
+            <p class="lane__report a a-fade" style={`--d:${T + 900 + i * 120 + durs[i % durs.length]!}ms`}><Icon name="lucide:corner-down-right" aria-hidden="true" />{l.report}</p>
+            <p class="lane__tools">tools: {l.tools}</p>
+          </li>
+        ))}
+      </ol>
+      <span class="tl tl--muted a a-fade" style={`--d:${T + 1300}ms`}>● main lane: reads src/mail/ itself while the workers run</span>
+      <span class="tl tl--hit a a-fade" style={`--d:${end + 300}ms`}>● {d.lanes.length} reports in. "tests pass" is a claim: verifying before it reaches you.</span>
+    </div>
+  </div>
+  <div class="roster" id="roster">
+    <p class="roster__head"><span class="label">The {kit.roster.length} typed workers</span> <span class="talos-muted">from payload/claude/agents</span></p>
+    <ul>
+      {kit.roster.map((w) => (
+        <li>
+          <span class="chip talos-chamfer talos-chamfer--flag"><Icon name={workerIcon(w.name)} aria-hidden="true" />{w.name}</span>
+          <span class="lane__model">{w.model}</span>
+          <p>{w.purpose}</p>
+          <p class="lane__tools">{w.toolMode === "allowlist" ? "tools" : "all tools except"}: {w.tools.join(", ")}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</Scene>
+
+<style>
+  .you { color: var(--talos-muted-foreground); }
+  .lanes { list-style: none; margin: 0.7rem 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.6rem; }
+  .lane { --_edge: var(--talos-edge-subtle); --_fill: hsl(0 0% 7% / 0.9); padding: 0.65rem 0.75rem; display: grid; gap: 0.4rem; align-content: start; }
+  .lane__head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+  .lane__model { font-size: 0.66rem; color: var(--talos-muted-foreground); }
+  .lane p { margin: 0; white-space: normal; }
+  .lane__task { font-family: var(--talos-font-body); font-size: 0.8rem; color: var(--talos-foreground); line-height: 1.4; }
+  .lane__bar { display: block; height: 2px; background: var(--talos-edge-subtle); overflow: hidden; }
+  .lane__bar span { display: block; height: 100%; background: var(--talos-foreground); transform-origin: left; }
+  .lane__report { display: flex; gap: 0.35rem; font-size: 0.7rem; line-height: 1.45; }
+  .lane__report :global(svg) { width: 0.8rem; height: 0.8rem; flex: none; margin-top: 0.2rem; color: var(--talos-muted-foreground); }
+  .lane__tools { font-size: 0.64rem; color: var(--talos-muted-foreground); }
+  .roster { border-top: 1px solid var(--talos-edge-subtle); padding-top: 0.75rem; }
+  .roster__head { margin: 0; display: flex; gap: 0.6rem; align-items: baseline; flex-wrap: wrap; font-size: 0.75rem; }
+  .roster ul { list-style: none; margin: 0.9rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.9rem 1.2rem; }
+  .roster li { display: grid; gap: 0.3rem; align-content: start; grid-template-columns: auto 1fr; align-items: center; }
+  .roster li p { grid-column: 1 / -1; margin: 0; font-family: var(--talos-font-body); font-size: 0.8rem; line-height: 1.5; color: hsl(var(--talos-foreground-hsl) / 0.82); }
+  .roster li .lane__tools { font-family: ui-monospace, Menlo, monospace; font-size: 0.66rem; color: var(--talos-muted-foreground); }
+</style>

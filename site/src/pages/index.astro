@@ -1,113 +1,107 @@
 ---
-// Landing: the tagline, the loop, the quick start, the principles and where to read on. The content is the
-// README's front page; the method in full is /docs/method/.
+// Landing: the method shown working on one fictional project. Every scene is generated from this repository
+// by site/scripts/gen.ts (run before `astro build`), into src/generated/kit.json: the loop and the captions
+// from docs/method.md, workers from payload/claude/agents, hooks and their real output from
+// payload/claude/hooks, terminal output from the kit's scripts run on a demo vault, the quick start and the
+// principles from README.md. Nothing on this page is copied by hand from those files.
 import "@j_shelfwood/talos-ui/talos-data.css";
 import "@j_shelfwood/talos-ui/talos-motion.css";
+import "../styles/scenes.css";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import GlassPanel from "@j_shelfwood/talos-ui/astro/GlassPanel.astro";
 import LinkCard from "@j_shelfwood/talos-ui/astro/LinkCard.astro";
+import { Icon } from "astro-icon/components";
+import LoopRing from "../components/scenes/LoopRing.astro";
+import Intake from "../components/scenes/Intake.astro";
+import Dispatch from "../components/scenes/Dispatch.astro";
+import Verify from "../components/scenes/Verify.astro";
+import Decide from "../components/scenes/Decide.astro";
+import Record from "../components/scenes/Record.astro";
+import Retro from "../components/scenes/Retro.astro";
+import Architecture from "../components/scenes/Architecture.astro";
+import kitJson from "../generated/kit.json";
+import type { Kit } from "../../scripts/gen";
 import { REPO } from "../site";
 
-const loop = [
-  ["Intake", "Every request becomes one line in a project tracker. Messages are read live, never copied."],
-  ["Shape", "A line is ready for an agent when it says <code>done when:</code> something a command can show."],
-  ["Dispatch", "Independent work goes out as parallel lanes to typed workers, each in its own worktree."],
-  ["Verify", "A worker's report is a claim until it is re-derived. \"Works\" needs a check that could have failed."],
-  ["Decide", "Reversible work is done. What is yours arrives as one question with a recommendation."],
-  ["Record", "Decisions, finished tasks and the project handoff land in the vault, so no session starts from zero."],
-  ["Retro", "Weekly, recurring friction from the agent's own transcripts becomes a hook."],
-];
-
-const principles = [
-  ["CLAUDE.md is an index, not a manual.", "One line per rule, pointing at the file that owns it. Content lives once."],
-  ["Gates are hooks, not prose.", "A rule that must hold (no force push, no untyped subagent, no message sent unasked) is enforced by the harness."],
-  ["Claims carry their instrument.", "<code>verified: &lt;command&gt; → &lt;result&gt;</code>, <code>inferred</code> or <code>assumed</code>. \"Works\" needs a check that could have failed."],
-  ["A subagent's finding is not evidence", "until the main agent or a <code>verifier</code> re-derives it."],
-  ["Reversible work is done; irreversible work is asked once,", "as a question with a recommended option. The split comes from counting which prompts were actually rejected."],
-  ["Two state stores:", "auto-memory for how to work, the vault for project state. Messages are read live, never copied."],
-  ["Close the loop:", "a weekly retro over your own transcripts turns recurring friction into hooks and doc fixes."],
-];
+const kit = kitJson as unknown as Kit;
+const { readme } = kit;
 ---
 
 <BaseLayout>
-  <section class="hero talos-stack">
-    <span class="talos-eyebrow">// An operating method for AI agents</span>
-    <h1 class="hero__title">Agents do the work. <span>You make the decisions.</span></h1>
-    <p class="hero__lede">
-      Jig is an operating method for working with AI agents, and the kit that runs it: Claude Code as a team of
-      typed agents, with an Obsidian vault as their shared memory. You don't install it by hand: your own agent
-      interviews you and builds it.
-    </p>
-    <p class="hero__note talos-muted">
-      In woodworking, a jig guides every cut so the result is repeatable. This one does that for agent output.
-    </p>
-    <div class="talos-row hero__actions">
-      <a class="talos-button talos-button--solid" href="/docs/method/">Read the method</a>
-      <a class="talos-button talos-button--ghost" href={REPO}>View on GitHub</a>
+  <script is:inline>
+    // Arm the scene animations before first paint, only when motion is allowed (src/styles/scenes.css).
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("motion");
+  </script>
+
+  <section class="hero">
+    <div class="hero__text talos-stack">
+      <span class="talos-eyebrow">// An operating method for AI agents</span>
+      <h1 class="hero__title">Agents do the work. <span>You make the decisions.</span></h1>
+      <p class="hero__lede">
+        Jig is an operating method for working with AI agents, and the kit that runs it: Claude Code as a team of
+        typed agents, with an Obsidian vault as their shared memory. You don't install it by hand: your own agent
+        interviews you and builds it.
+      </p>
+      <p class="hero__note talos-muted">
+        Below, one session on a made-up web shop, {kit.demo.project}, from a customer request to a recorded decision.
+        Every file, worker, hook and command output on this page is generated from the kit itself.
+      </p>
+      <div class="talos-row hero__actions">
+        <a class="talos-button talos-button--solid" href="#intake">See it run</a>
+        <a class="talos-button talos-button--ghost" href="/docs/method/">Read the method</a>
+      </div>
     </div>
+    <LoopRing steps={kit.steps} />
   </section>
 
-  <section class="block" aria-labelledby="loop">
-    <div class="block__head">
-      <span class="talos-eyebrow">// 01</span>
-      <h2 id="loop">The loop</h2>
-    </div>
-    <ol class="loop">
-      {
-        loop.map(([name, text], i) => (
-          <li>
-            <GlassPanel class="loop__step talos-pad">
-              <span class="loop__n">{String(i + 1).padStart(2, "0")}</span>
-              <h3>{name}</h3>
-              <p set:html={text} />
-            </GlassPanel>
-          </li>
-        ))
-      }
-    </ol>
-    <p class="block__more"><a href="/docs/method/">The method in full</a>: roles, cadences, autonomy levels, how you know it works.</p>
-  </section>
+  <ul class="counts" aria-label="What is in the kit">
+    {kit.counts.map((c) => (
+      <li><a href={c.href}><span class="counts__n">{c.n}</span><span class="counts__l">{c.label}</span></a></li>
+    ))}
+  </ul>
 
-  <section class="block" aria-labelledby="quick-start">
+  <Intake kit={kit} />
+  <Dispatch kit={kit} />
+  <Verify kit={kit} />
+  <Decide kit={kit} />
+  <Record kit={kit} />
+  <Retro kit={kit} />
+  <Architecture kit={kit} />
+
+  <section class="block" aria-labelledby="quick-start" id="quick-start-block">
     <div class="block__head">
-      <span class="talos-eyebrow">// 02</span>
+      <span class="talos-eyebrow">// Install</span>
       <h2 id="quick-start">Quick start</h2>
     </div>
-    <div class="talos-code quick">
-      <div class="talos-code__bar"><span>Terminal</span></div>
-      <pre class="talos-code__body"><code>git clone {REPO}.git ~/Projects/jig
-cd ~/Projects/jig
-claude</code></pre>
+    <div class="win talos-chamfer quick">
+      <div class="win__bar"><Icon name="lucide:terminal" aria-hidden="true" /><span>Terminal</span></div>
+      <div class="win__body">{readme.commands.map((c) => <span class="tl tl--cmd"><span>{c}</span></span>)}</div>
     </div>
     <p>Then type:</p>
-    <blockquote class="prompt">Read BOOTSTRAP.md and set up my machine following it. Interview me first.</blockquote>
-    <p>
-      The agent takes an inventory (read only), asks you about ten questions, shows a plan table and waits for your
-      yes. It backs up anything it would overwrite, installs, then runs checks that could fail and shows you their
-      output.
+    <blockquote class="prompt" set:html={readme.prompt} />
+    <p set:html={readme.after} />
+    <p class="quick__counts talos-muted">
+      The interview fills {kit.counts.find((c) => c.label === "interview fields")!.n} fields; nothing personal is in the kit until then.
     </p>
     <aside class="talos-alert talos-alert--warning quick__warn">
       <span class="talos-alert__icon" aria-hidden="true">!</span>
       <div class="talos-alert__title">Not inside a vault</div>
-      <div class="talos-alert__body">Don't clone this inside an Obsidian vault: the templates would show up as real notes.</div>
+      <div class="talos-alert__body" set:html={readme.warning} />
     </aside>
   </section>
 
   <section class="block" aria-labelledby="principles">
     <div class="block__head">
-      <span class="talos-eyebrow">// 03</span>
+      <span class="talos-eyebrow">// The ideas in one screen</span>
       <h2 id="principles">The principles behind it</h2>
     </div>
     <ol class="principles">
-      {principles.map(([lead, rest]) => (
-        <li><strong>{lead}</strong> <span set:html={rest} /></li>
-      ))}
+      {readme.ideas.map((x) => <li><strong set:html={x.lead} /> <span set:html={x.rest} /></li>)}
     </ol>
   </section>
 
   <section class="block" aria-labelledby="read-more">
     <div class="block__head">
-      <span class="talos-eyebrow">// 04</span>
+      <span class="talos-eyebrow">// Read on</span>
       <h2 id="read-more">Read more</h2>
     </div>
     <div class="cards">
@@ -118,11 +112,22 @@ claude</code></pre>
   </section>
 </BaseLayout>
 
+<script>
+  import "../scripts/scenes.ts";
+</script>
+
 <style>
-  .hero { padding-block: 4rem 2rem; gap: 1.25rem; max-width: 52rem; }
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: center;
+    padding-block: 3rem 1.5rem;
+  }
+  .hero__text { gap: 1.2rem; }
   .hero__title {
-    font-size: clamp(2.1rem, 6vw, 4.4rem);
-    line-height: 1.04;
+    font-size: clamp(2rem, 5.2vw, 3.9rem);
+    line-height: 1.05;
     letter-spacing: 0.06em;
     overflow-wrap: break-word;
   }
@@ -131,24 +136,43 @@ claude</code></pre>
     margin: 0;
     max-width: 58ch;
     font-family: var(--talos-font-body);
-    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    font-size: clamp(1rem, 1.4vw, 1.12rem);
     line-height: 1.65;
     color: hsl(var(--talos-foreground-hsl) / 0.86);
   }
-  .hero__note { margin: 0; font-size: 0.85rem; letter-spacing: 0.04em; }
-  .hero__actions { margin-top: 0.75rem; }
+  .hero__note { margin: 0; font-family: var(--talos-font-body); font-size: 0.88rem; line-height: 1.55; max-width: 58ch; }
+  .hero__actions { margin-top: 0.5rem; }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: minmax(0, 1fr); padding-block: 1.5rem 0.5rem; }
+  }
+
+  .counts {
+    list-style: none;
+    margin: 2rem 0 0;
+    padding: 1.1rem 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 1rem;
+    border-block: 1px solid var(--talos-edge-subtle);
+  }
+  .counts a { display: grid; gap: 0.2rem; text-decoration: none; color: inherit; }
+  .counts a:focus-visible { outline: 2px solid var(--talos-foreground); outline-offset: 4px; }
+  .counts__n { font-family: var(--talos-font-display); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 300; line-height: 1; }
+  .counts__l { font-family: var(--talos-font-display); font-size: 0.64rem; letter-spacing: var(--talos-tracking-hud); text-transform: uppercase; color: var(--talos-muted-foreground); }
+  .counts a:hover .counts__l { color: var(--talos-foreground); }
 
   .block { margin-block: 5rem; }
-  .block__head { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem; }
+  .block__head { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
   .block h2 { font-size: clamp(1.3rem, 2.6vw, 1.8rem); }
-  .block p,
-  .principles li {
+  .block p, .principles li {
     font-family: var(--talos-font-body);
     line-height: 1.65;
     color: hsl(var(--talos-foreground-hsl) / 0.86);
     max-width: 70ch;
   }
-  .block :global(code) {
+  :global(.scene__text p), :global(.scene__text dd) { font-family: var(--talos-font-body); line-height: 1.6; color: hsl(var(--talos-foreground-hsl) / 0.86); }
+  :global(.scene__text p) { font-size: 0.95rem; }
+  :global(.scene__text code), .block :global(code) {
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 0.85em;
     padding: 0.1em 0.35em;
@@ -156,29 +180,12 @@ claude</code></pre>
     border: 1px solid var(--talos-edge-subtle);
     border-radius: var(--talos-radius-sm);
   }
-  .block a:not(.talos-linkcard) {
+  :global(.scene__text a), .block a:not(.talos-linkcard) {
     color: var(--talos-accent);
     text-decoration: none;
     border-bottom: 1px solid hsl(var(--talos-accent-hsl) / 0.35);
   }
-
-  .loop {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-    gap: 1rem;
-  }
-  .loop li { display: flex; }
-  .loop :global(.loop__step) { width: 100%; }
-  .loop__n { font-size: 0.7rem; letter-spacing: var(--talos-tracking-hud); color: var(--talos-accent); }
-  .loop h3 { font-size: 1rem; margin: 0.4rem 0 0.6rem; }
-  .loop p { margin: 0; font-size: 0.9rem; line-height: 1.55; }
-  .block__more { margin-top: 1.5rem; }
-
   .quick { max-width: 70ch; }
-  .quick .talos-code__body code { padding: 0; border: 0; background: none; font-size: inherit; }
   .prompt {
     margin: 0;
     padding: 0.75rem 1rem;
@@ -188,19 +195,9 @@ claude</code></pre>
     max-width: 70ch;
   }
   .quick__warn { max-width: 70ch; box-sizing: border-box; }
-
   .principles { margin: 0; padding-left: 1.4rem; display: grid; gap: 0.75rem; }
   .principles li::marker { color: var(--talos-accent); }
   .principles strong { color: var(--talos-text-primary); font-weight: 500; }
-
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: 1rem;
-  }
-
-  @media (max-width: 600px) {
-    .hero { padding-block: 2rem 1rem; }
-    .block { margin-block: 3.5rem; }
-  }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
+  @media (max-width: 600px) { .block { margin-block: 3.5rem; } }
 </style>

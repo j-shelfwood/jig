@@ -1,0 +1,14 @@
+---
+// Note: a vault note body rendered line by line (frontmatter as properties), from generated text.
+import { mdLine, splitNote } from "../../lib/mdline";
+interface Props { text: string; props?: boolean; only?: (line: string) => boolean; class?: string; style?: string }
+const { text, props: showProps = true, only, class: cls, style } = Astro.props;
+const { props, body } = splitNote(text);
+---
+<div class:list={["note", cls]} style={style}>
+  {showProps && props.length > 0 && <dl class="note__props">{props.map(([k, v]) => <><dt>{k}</dt><dd>{v}</dd></>)}</dl>}
+  {body.filter((l) => !only || only(l)).map((line) => {
+    const m = mdLine(line);
+    return m.kind === "blank" ? null : <span class:list={["md", `md--${m.kind === "done" ? "task md--done" : m.kind}`]} set:html={m.html} />;
+  })}
+</div>

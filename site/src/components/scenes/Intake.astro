@@ -1,0 +1,82 @@
+---
+// Scene: Intake + Shape. A request arrives; it becomes a task line in the demo tracker, which gains its
+// `done when:` and #agent-ready; agent-queue.ts (run on the demo vault at build time) then lists it.
+import { Icon } from "astro-icon/components";
+import Scene from "./Scene.astro";
+import VaultTree from "./VaultTree.astro";
+import { mdLine, splitNote, inline, checkbox } from "../../lib/mdline";
+import type { Kit } from "../../../scripts/gen";
+interface Props { kit: Kit }
+const { kit } = Astro.props;
+const { demo } = kit;
+const P = `Projects/${demo.project}`;
+const tracker = demo.vault.shaped[`${P}/tracker.md`]!;
+const { props, body } = splitNote(tracker);
+const r = demo.request;
+const prio = `${r.priority} ${r.due}`;
+const queue = demo.runs.queue.out.split("\n");
+const T0 = 2000; // line appears
+---
+<Scene id="intake" steps={[kit.scenes.intake.step, kit.scenes.intake.shape]}>
+  <div class="mail talos-chamfer a a-fade" style="--d:150ms">
+    <Icon name="lucide:mail" aria-hidden="true" />
+    <div>
+      <span class="label">Incoming · {r.from}</span>
+      <p>{r.text}</p>
+    </div>
+  </div>
+  <div class="win pane talos-chamfer">
+    <div class="win__bar"><Icon name="lucide:notebook-text" aria-hidden="true" /><span>{P}/tracker.md</span></div>
+    <div class="pane__body">
+      <VaultTree files={Object.keys(demo.vault.shaped)} open={`${P}/tracker.md`} />
+      <div class="note">
+        <dl class="note__props">{props.map(([k, v]) => <><dt>{k}</dt><dd>{v}</dd></>)}</dl>
+        {body.map((line) => {
+          if (line === demo.taskOpen)
+            return (
+              <span class="md md--task new a a-flash" style={`--d:${T0 + 4200}ms;--t:1600ms`}>
+                <span class="a a-fade" style={`--d:${T0}ms`} set:html={checkbox(false)} />
+                <span class="txt">
+                  <span class="a a-fade" style={`--d:${T0 + 200}ms`}>{r.task}</span>{" "}
+                  <span class="a a-pop shape" style={`--d:${T0 + 1500}ms`} set:html={inline("#agent-ready")} />{" "}
+                  <span class="a a-fade shape" style={`--d:${T0 + 2300}ms;--t:700ms`} set:html={inline(`done when: ${r.doneWhen}`)} />{" "}
+                  <span class="a a-fade" style={`--d:${T0 + 3400}ms`} set:html={inline(prio)} />
+                </span>
+              </span>
+            );
+          const m = mdLine(line);
+          return m.kind === "blank" ? null : <span class:list={["md", `md--${m.kind === "done" ? "task md--done" : m.kind}`]} set:html={m.html} />;
+        })}
+      </div>
+    </div>
+  </div>
+  <div class="win term talos-chamfer a a-fade" style={`--d:${T0 + 4600}ms`}>
+    <div class="win__bar"><Icon name="lucide:terminal" aria-hidden="true" /><span>agent session · read-only</span></div>
+    <div class="win__body">
+      <span class="tl tl--cmd"><span class="a a-type" style={`--d:${T0 + 4900}ms;--t:900ms;--steps:${demo.runs.queue.cmd.length}`}>{demo.runs.queue.cmd}</span></span>
+      {queue.map((l, i) => (
+        <span class:list={["tl a a-fade", l.startsWith("#") ? "tl--muted" : "", l.includes(r.task) && "tl--hl"]} style={`--d:${T0 + 6000 + i * 250}ms`}>{l}</span>
+      ))}
+    </div>
+  </div>
+  <dl class="legend">
+    {kit.inline.schemaTags.map((t) => <div><dt><span class="md"><span class:list={["tag", t.tag === "#agent-ready" && "tag--ready"]}>{t.tag}</span></span></dt><dd set:html={t.meaning} /></div>)}
+  </dl>
+</Scene>
+
+<style>
+  .mail {
+    --_edge: var(--talos-edge-default);
+    --_fill: hsl(0 0% 6% / 0.95);
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    padding: 0.8rem 1rem;
+    max-width: 34rem;
+  }
+  .mail > :global(svg) { width: 1.1rem; height: 1.1rem; flex: none; margin-top: 0.15rem; color: var(--talos-muted-foreground); }
+  .mail p { margin: 0.2rem 0 0; font-family: var(--talos-font-body); font-size: 0.88rem; line-height: 1.5; }
+  .new { margin: 0.1rem -0.4rem; padding: 0.1rem 0.4rem 0.1rem 1.85rem; }
+  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.6rem 1.2rem; margin: 0; font-size: 0.78rem; }
+  .legend div { display: grid; grid-template-rows: subgrid; grid-row: span 2; gap: 0.25rem; align-items: start; }
+  .legend dt { align-self: end; }
+  .legend dd { margin: 0; color: var(--talos-muted-foreground); font-family: var(--talos-font-body); line-height: 1.5; }
+</style>

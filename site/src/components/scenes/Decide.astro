@@ -1,0 +1,74 @@
+---
+// Scene: Decide. What is yours arrives as one question, recommended option first, its description the
+// observation that decides it; reversible work was already done and is listed with its undo command. The
+// kinds of action that are asked come from step 5 of docs/method.md.
+import { Icon } from "astro-icon/components";
+import Scene from "./Scene.astro";
+import type { Kit } from "../../../scripts/gen";
+interface Props { kit: Kit }
+const { kit } = Astro.props;
+const d = kit.scenes.decide;
+const pick = 2600;
+---
+<Scene id="decide" steps={[d.step]}>
+  <div class="dgrid">
+    <div class="dialog talos-chamfer a a-fade" style="--d:200ms" role="img" aria-label={`A decision question: ${d.question} Recommended: ${d.options[0]!.label}`}>
+      <div class="dialog__head">
+        <span class="chip talos-chamfer talos-chamfer--flag chip--dim">{d.header}</span>
+        <span class="label">1 question</span>
+      </div>
+      <p class="dialog__q">{d.question}</p>
+      <ol class="opts">
+        {d.options.map((o, i) => (
+          <li class:list={["opt a a-fade", i === 0 && "opt--rec"]} style={`--d:${600 + i * 220}ms`}>
+            <span class="opt__n">{i + 1}</span>
+            <div>
+              <span class="opt__label">{o.label.replace(/ \(Recommended\)$/, "")}{i === 0 && <span class="chip talos-chamfer talos-chamfer--flag chip--solid rec">Recommended</span>}</span>
+              <span class="opt__desc">{o.description}</span>
+            </div>
+            {i === 0 && <span class="opt__sel a a-pop" style={`--d:${pick}ms`} aria-hidden="true"><Icon name="lucide:check" /></span>}
+          </li>
+        ))}
+        <li class="opt opt--other a a-fade" style={`--d:${600 + d.options.length * 220}ms`}><span class="opt__n">{d.options.length + 1}</span><div><span class="opt__label">Other</span><span class="opt__desc">type your own answer</span></div></li>
+      </ol>
+      <div class="dialog__foot"><kbd class="a a-flash" style={`--d:${pick - 300}ms;--t:900ms`}>Enter</kbd><span>accepts the recommendation</span></div>
+    </div>
+    <div class="side">
+      <div class="win talos-chamfer a a-fade" style={`--d:${pick + 500}ms`}>
+        <div class="win__bar"><Icon name="lucide:undo-2" aria-hidden="true" /><span>done without asking · reversible</span></div>
+        <div class="win__body">
+          {d.done.map((x, i) => (
+            <span class="tl a a-fade" style={`--d:${pick + 800 + i * 300}ms`}>✓ {x.what}<br /><span class="tl--muted">  undo: </span><code>{x.undo}</code></span>
+          ))}
+        </div>
+      </div>
+      <div class="asked a a-fade" style={`--d:${pick + 1900}ms`}>
+        <span class="label">Asked once, never done unasked</span>
+        <p>{d.asked.map((k) => <span class="chip talos-chamfer talos-chamfer--flag chip--warn">{k}</span>)}</p>
+      </div>
+    </div>
+  </div>
+</Scene>
+
+<style>
+  .dgrid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0.9rem; align-items: start; }
+  @media (max-width: 1000px) { .dgrid { grid-template-columns: minmax(0, 1fr); } }
+  .dialog { --_edge: var(--talos-edge-strong); --_fill: hsl(0 0% 5% / 0.96); padding: 1rem 1.1rem; display: grid; gap: 0.75rem; }
+  .dialog__head { display: flex; justify-content: space-between; align-items: center; }
+  .dialog__q { margin: 0; font-family: var(--talos-font-body); font-size: 1rem; font-weight: 500; color: var(--talos-foreground); }
+  .opts { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+  .opt { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr) auto; gap: 0.6rem; align-items: start; padding: 0.55rem 0.6rem; border: 1px solid transparent; }
+  .opt--rec { border-color: var(--talos-edge-strong); background: hsl(var(--talos-foreground-hsl) / 0.05); }
+  .opt__n { font-family: var(--talos-font-display); font-size: 0.75rem; color: var(--talos-muted-foreground); padding-top: 0.1rem; }
+  .opt__label { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; font-family: var(--talos-font-body); font-size: 0.86rem; color: var(--talos-foreground); }
+  .opt__desc { display: block; margin-top: 0.2rem; font-family: var(--talos-font-body); font-size: 0.76rem; line-height: 1.45; color: var(--talos-muted-foreground); }
+  .opt--rec .opt__desc { color: hsl(var(--talos-foreground-hsl) / 0.78); }
+  .rec { font-size: 0.55rem; padding: 0.12rem 0.45rem; }
+  .opt__sel { display: grid; place-items: center; width: 1.3rem; height: 1.3rem; background: var(--talos-foreground); color: var(--talos-background); }
+  .opt__sel :global(svg) { width: 0.9rem; height: 0.9rem; }
+  .dialog__foot { display: flex; gap: 0.6rem; align-items: center; font-size: 0.72rem; color: var(--talos-muted-foreground); }
+  kbd { font-family: ui-monospace, Menlo, monospace; font-size: 0.7rem; padding: 0.15rem 0.45rem; border: 1px solid var(--talos-edge-strong); border-radius: var(--talos-radius-sm); color: var(--talos-foreground); }
+  .side { display: grid; gap: 0.9rem; }
+  .asked { display: grid; gap: 0.5rem; }
+  .asked p { margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+</style>

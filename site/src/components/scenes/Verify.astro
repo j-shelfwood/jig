@@ -1,0 +1,61 @@
+---
+// Scene: Verify. An operator reports "tests pass"; a verifier re-runs the observable in a clean copy and
+// returns REFUTED with what it saw. The verdict words are the verifier's own (payload/claude/agents/verifier.md).
+import { Icon } from "astro-icon/components";
+import Scene from "./Scene.astro";
+import type { Kit } from "../../../scripts/gen";
+interface Props { kit: Kit }
+const { kit } = Astro.props;
+const v = kit.scenes.verify;
+const lane = kit.scenes.dispatch.lanes.find((l) => l.report.includes("tests pass"))!;
+const T = 1400;
+const outAt = T + 2300;
+const verdictAt = outAt + v.output.length * 200 + 400;
+---
+<Scene id="verify" steps={[v.step]}>
+  <div class="vgrid">
+    <div class="win talos-chamfer">
+      <div class="win__bar"><Icon name="lucide:wrench" aria-hidden="true" /><span>operator report · {lane.task}</span></div>
+      <div class="win__body">
+        <span class="tl">Status: Done</span>
+        <span class="tl tl--muted">Changed: src/mail/receipt.ts, checkout/place-order.ts, checkout/receipt.test.ts</span>
+        <span class="tl claim a a-flash" style={`--d:600ms;--t:1400ms`}>{v.claim}</span>
+        <span class="tl tl--muted">Not done: none</span>
+      </div>
+    </div>
+    <div class="win talos-chamfer">
+      <div class="win__bar"><Icon name="lucide:scale" aria-hidden="true" /><span>verifier · a different instrument</span></div>
+      <div class="win__body">
+        <span class="tl tl--muted a a-fade" style={`--d:${T}ms`}>{v.assert}</span>
+        <span class="tl tl--cmd"><span class="a a-type" style={`--d:${T + 1000}ms;--t:700ms;--steps:${v.command.length}`}>{v.command}</span></span>
+        {v.output.map((l, i) => (
+          <span class:list={["tl a a-fade", l.includes("✗") || / fail$/.test(l) && !/ 0 fail/.test(l) ? "tl--bad" : l.includes("✓") ? "tl--good" : ""]} style={`--d:${outAt + i * 200}ms`}>{l}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+  <div class="verdict a a-pop" style={`--d:${verdictAt}ms`}>
+    <span class="chip talos-chamfer talos-chamfer--flag chip--bad stamp"><Icon name="lucide:x" aria-hidden="true" />{v.verdict}</span>
+    <p>{v.finding}</p>
+  </div>
+  <div class="rerun a a-fade" style={`--d:${verdictAt + 1400}ms`}>
+    <span class="label">After the fix</span>
+    <code>{v.command}</code><span class="talos-muted">→ {v.rerun.output.map((s) => s.trim()).join(", ")}</span>
+    <span class="chip talos-chamfer talos-chamfer--flag chip--good"><Icon name="lucide:check" aria-hidden="true" />{v.rerun.verdict}</span>
+  </div>
+  <p class="vocab">
+    <span class="label">The verifier returns</span>
+    {v.verdicts.map((w) => <span class="chip talos-chamfer talos-chamfer--flag chip--dim">{w}</span>)}
+  </p>
+</Scene>
+
+<style>
+  .vgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 0.8rem; }
+  .claim { margin: 0 -0.4rem; padding: 0 0.4rem; color: var(--talos-foreground); box-shadow: inset 2px 0 0 var(--talos-foreground); }
+  .verdict { display: flex; gap: 0.9rem; align-items: center; flex-wrap: wrap; }
+  .verdict p { margin: 0; font-family: var(--talos-font-body); font-size: 0.88rem; flex: 1 1 16rem; }
+  .stamp { font-size: 0.85rem; padding: 0.45rem 0.9rem; }
+  .rerun { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; font-size: 0.78rem; }
+  .rerun code { font-size: 0.75rem; }
+  .vocab { margin: 0; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+</style>

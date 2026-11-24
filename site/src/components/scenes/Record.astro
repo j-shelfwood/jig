@@ -1,0 +1,83 @@
+---
+// Scene: Record. The tracker line flips to done with its date, a decision note appears, the handoff is
+// rewritten in place, and vault-lint.ts (run on the demo vault before and after, at build time) goes from a
+// stale-handoff finding to clean. All note text is the generated demo vault, built from payload/vault/Templates.
+import { Icon } from "astro-icon/components";
+import Scene from "./Scene.astro";
+import VaultTree from "./VaultTree.astro";
+import Note from "./Note.astro";
+import { mdLine } from "../../lib/mdline";
+import type { Kit } from "../../../scripts/gen";
+interface Props { kit: Kit }
+const { kit } = Astro.props;
+const { demo } = kit;
+const P = `Projects/${demo.project}`;
+const before = demo.vault.shaped, after = demo.vault.after;
+const section = (text: string, h: string) => {
+  const lines = text.split("\n");
+  const i = lines.indexOf(`## ${h}`);
+  const out: string[] = [];
+  for (const l of lines.slice(i + 1)) { if (l.startsWith("## ")) break; if (l.trim()) out.push(l); }
+  return out;
+};
+const openBefore = section(before[`${P}/tracker.md`]!, "Open");
+const openAfter = section(after[`${P}/tracker.md`]!, "Open");
+const decisionPath = `${P}/${demo.decision.file}`;
+const fresh = Object.keys(after).filter((f) => !(f in before));
+const lintBefore = demo.runs.lintBefore.out.split("\n");
+const T_FLIP = 1600, T_DEC = 3200, T_HAND = 5000, T_LINT = 6800;
+const render = (l: string) => { const m = mdLine(l); return { cls: `md md--${m.kind === "done" ? "task md--done" : m.kind}`, html: m.html }; };
+---
+<Scene id="record" steps={[kit.scenes.record.step]}>
+  <div class="rgrid">
+    <div class="win pane talos-chamfer">
+      <div class="win__bar"><Icon name="lucide:notebook-text" aria-hidden="true" /><span>{P}/tracker.md</span></div>
+      <div class="pane__body">
+        <VaultTree files={Object.keys(after)} open={`${P}/tracker.md`} fresh={fresh} freshAt={T_DEC} />
+        <div class="note">
+          <span class="md md--h2">Open</span>
+          {openAfter.map((l, i) => {
+            const was = openBefore[i]!;
+            if (was === l) { const r = render(l); return <span class={r.cls} set:html={r.html} />; }
+            const a = render(was), b = render(l);
+            return (
+              <span class="swap flip a a-flash" style={`--d:${T_FLIP + i * 500}ms;--t:1400ms`}>
+                <span class={`${a.cls} a a-out`} style={`--d:${T_FLIP + i * 500}ms;--t:200ms`} aria-hidden="true" set:html={a.html} />
+                <span class={`${b.cls} a a-fade`} style={`--d:${T_FLIP + i * 500}ms;--t:300ms`} set:html={b.html} />
+              </span>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+    <div class="win talos-chamfer a a-fade" style={`--d:${T_DEC}ms`}>
+      <div class="win__bar"><Icon name="lucide:file-plus-2" aria-hidden="true" /><span>{demo.decision.file} · new, never edited</span></div>
+      <Note text={after[decisionPath]!} />
+    </div>
+    <div class="win talos-chamfer">
+      <div class="win__bar"><Icon name="lucide:file-pen" aria-hidden="true" /><span>{P}/handoff.md · rewritten in place</span></div>
+      <div class="swap hand">
+        <Note text={before[`${P}/handoff.md`]!} class="a a-out" style={`--d:${T_HAND}ms;--t:300ms`} only={(l) => !l.startsWith(">")} />
+        <Note text={after[`${P}/handoff.md`]!} class="a a-fade" style={`--d:${T_HAND + 200}ms;--t:500ms`} only={(l) => !l.startsWith(">")} />
+      </div>
+    </div>
+    <div class="win term talos-chamfer">
+      <div class="win__bar"><Icon name="lucide:terminal" aria-hidden="true" /><span>vault-lint.ts on the demo vault</span></div>
+      <div class="win__body">
+        <span class="tl tl--cmd"><span>{demo.runs.lintBefore.cmd}</span></span>
+        {lintBefore.map((l) => <span class:list={["tl", l.startsWith("stale") && "tl--bad"]}>{l}</span>)}
+        <span class="tl tl--cmd"><span class="a a-type" style={`--d:${T_LINT}ms;--t:800ms;--steps:${demo.runs.lintAfter.cmd.length}`}>{demo.runs.lintAfter.cmd}</span></span>
+        <span class="tl tl--good a a-fade" style={`--d:${T_LINT + 1000}ms`}>{demo.runs.lintAfter.out}</span>
+      </div>
+    </div>
+  </div>
+</Scene>
+
+<style>
+  .rgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; align-items: start; }
+  .rgrid > .pane { grid-column: 1 / -1; }
+  @media (max-width: 1000px) { .rgrid { grid-template-columns: minmax(0, 1fr); } }
+  .flip { display: grid; margin: 0 -0.4rem; padding: 0 0.4rem; }
+  .hand { display: grid; }
+  .hand > :global(*) { min-width: 0; }
+</style>
