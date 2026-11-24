@@ -33,3 +33,11 @@ The root `Dockerfile` builds with bun and serves `site/dist` with nginx (`deploy
 ## Deploy
 
 Coolify builds the root `Dockerfile` on every push to `main` and serves it at jig.shelfwood.co. There is no separate deploy step.
+
+| field | value |
+|---|---|
+| domain | https://jig.shelfwood.co (A record at TransIP, set by hand) |
+| Coolify | standalone application `jig`, uuid `ntoet0999q3vnh6csxzvmkb7`, project `shelfwood-services`, environment `production` |
+| build | `dockerfile` build pack, `/Dockerfile`, port 80, Coolify health check off (no Dockerfile HEALTHCHECK, on purpose) |
+| trigger | GitHub push webhook to Coolify's manual GitHub endpoint, with a shared secret set on both sides |
+| TLS | Traefik with Let's Encrypt; a certificate request made before DNS resolved is not retried, so redeploy after a DNS change |
