@@ -1,6 +1,9 @@
-# 2. Prompting strategies
+---
+title: Prompting strategies
+description: "Thirteen prompting rules, each with the failure it prevents."
+---
 
-The rules below came out of reading months of Joris's own session transcripts and counting what went wrong. Each one names the failure it prevents; keep the reason next to the rule when you adapt it, because a rule without its reason gets deleted or over-applied by the next editor (human or model).
+These rules are what makes step 4 (Verify) and step 5 (Decide) of [[method|the method]] hold. They came out of reading months of Joris's own session transcripts and counting what went wrong. Each one names the failure it prevents; keep the reason next to the rule when you adapt it, because a rule without its reason gets deleted or over-applied by the next editor (human or model).
 
 ## 1. Write prompts as an assembly, not a manual
 

@@ -1,6 +1,9 @@
-# 3. Orchestration (stage 3, optional)
+---
+title: Orchestration
+description: "Running many agents without watching each one: fan-out, worktrees, a chat channel per project, an event router, tracing."
+---
 
-How Joris runs many agents at once without watching each one. This is the most custom part of the setup: copy the **patterns**, build the pieces only when stage 1 and 2 are routine.
+How Joris runs many agents at once without watching each one. It is level 3 of the [[method#Autonomy levels|autonomy levels]]. This is the most custom part of the setup: copy the **patterns**, build the pieces only when stage 1 and 2 are routine.
 
 ## 3.1 Fan-out inside one session
 
@@ -60,7 +63,7 @@ Agents need a place to ask you things that reaches your phone. Joris self-hosts 
 
 - One private channel per project, `fleet-<project>`, with exactly two members: you and a **bot account** the agents post as.
 - The channel carries only **Decision posts**: the question, the recommended option, what it blocks, and a link to the thread that asked. Summaries stay in the agent's final report.
-- You answer in the post's thread, from your phone. The reply comes back to the agents as an event (3.5).
+- You answer in the post's thread, from your phone. The reply comes back to the agents as an event ([[#3.5 Events start agents: the fleet|3.5]]).
 - Two identities: agents post as the bot; a separate **read-only** connection reads your own unread messages and rejects writes. Your personal token is never used to post.
 - A gate in code (a hook on every chat write) checks that the bot only writes in a channel where you and it are the only members.
 - **Outbox**: mail an agent prepared in an unwatched session is posted to an outbox channel with the exact send; you approve, reject or comment there, and only then does a session send it, still behind the harness prompt.

@@ -47,6 +47,7 @@ flowchart TD
 
 ## Read first
 
+- [docs/method.md](docs/method.md): the operating method: intake, shape, dispatch, verify, decide, record, retro; roles, cadences, autonomy levels
 - [docs/architecture.md](docs/architecture.md): the layers, one owner per concern, and why the prompt files live in the vault
 - [docs/prompting-strategies.md](docs/prompting-strategies.md): 13 rules, each with the failure it prevents
 - [docs/orchestration.md](docs/orchestration.md): running many agents without watching each one

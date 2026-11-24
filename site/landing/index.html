@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>agent-setup-blueprint</title>
-  <meta name="description" content="A blueprint for running Claude Code as a team of typed agents, with an Obsidian vault as their shared memory. Your own agent interviews you and builds it.">
+  <meta name="description" content="An operating method for working with AI agents: agents do the work, you make the decisions. With a kit that runs it on Claude Code and an Obsidian vault.">
   <meta name="color-scheme" content="light dark">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -19,12 +19,26 @@
 
   <main>
     <section class="hero">
-      <h1>Claude Code as a team of typed agents, with an Obsidian vault as their memory.</h1>
-      <p class="lede">You don't install it by hand. You give it to your own Claude Code agent, which interviews you and builds the setup on your machine.</p>
+      <h1>Agents do the work. You make the decisions.</h1>
+      <p class="lede">An operating method for working with AI agents, and the kit that runs it: Claude Code as a team of typed agents, with an Obsidian vault as their shared memory. You don't install it by hand: your own agent interviews you and builds it.</p>
       <p class="actions">
-        <a class="button" href="docs/">Read the docs</a>
+        <a class="button" href="docs/method">Read the method</a>
         <a class="button secondary" href="https://github.com/j-shelfwood/agent-setup-blueprint">View on GitHub</a>
       </p>
+    </section>
+
+    <section>
+      <h2>The loop</h2>
+      <ol class="loop">
+        <li><strong>Intake.</strong> Every request becomes one line in a project tracker. Messages are read live, never copied.</li>
+        <li><strong>Shape.</strong> A line is ready for an agent when it says <code>done when:</code> something a command can show.</li>
+        <li><strong>Dispatch.</strong> Independent work goes out as parallel lanes to typed workers, each in its own worktree.</li>
+        <li><strong>Verify.</strong> A worker's report is a claim until it is re-derived. "Works" needs a check that could have failed.</li>
+        <li><strong>Decide.</strong> Reversible work is done. What is yours arrives as one question with a recommendation.</li>
+        <li><strong>Record.</strong> Decisions, finished tasks and the project handoff land in the vault, so no session starts from zero.</li>
+        <li><strong>Retro.</strong> Weekly, recurring friction from the agent's own transcripts becomes a hook.</li>
+      </ol>
+      <p><a href="docs/method">The method in full</a>: roles, cadences, autonomy levels, how you know it works.</p>
     </section>
 
     <section>
@@ -39,7 +53,7 @@ claude</code></pre>
     </section>
 
     <section>
-      <h2>The ideas in one screen</h2>
+      <h2>The principles behind it</h2>
       <ol class="ideas">
         <li><strong>CLAUDE.md is an index, not a manual.</strong> One line per rule, pointing at the file that owns it. Content lives once.</li>
         <li><strong>Gates are hooks, not prose.</strong> A rule that must hold (no force push, no untyped subagent, no message sent unasked) is enforced by the harness.</li>
@@ -54,7 +68,7 @@ claude</code></pre>
     <section>
       <h2>Read more</h2>
       <ul class="links">
-        <li><a href="docs/">Docs</a>: architecture, prompting strategies and orchestration</li>
+        <li><a href="docs/">Docs</a>: the method, architecture, prompting strategies, orchestration</li>
         <li><a href="https://github.com/j-shelfwood/agent-setup-blueprint/blob/main/BOOTSTRAP.md">BOOTSTRAP.md</a>: the procedure your agent follows</li>
         <li><a href="https://github.com/j-shelfwood/agent-setup-blueprint">Source on GitHub</a>, MIT licensed</li>
       </ul>

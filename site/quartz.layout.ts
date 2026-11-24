@@ -31,7 +31,15 @@ export const defaultContentPageLayout: PageLayout = {
     Component.Flex({
       components: [{ Component: Component.Search(), grow: true }, { Component: Component.Darkmode() }],
     }),
-    Component.Explorer(),
+    Component.Explorer({
+      // Reading order, not alphabetical. Self-contained: Quartz serialises this function with toString().
+      sortFn: (a, b) => {
+        const order = ["method", "architecture", "prompting-strategies", "orchestration", "install"]
+        const ia = order.indexOf(a.slugSegment)
+        const ib = order.indexOf(b.slugSegment)
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)
+      },
+    }),
   ],
   right: [
     Component.Graph(),
@@ -48,7 +56,15 @@ export const defaultListPageLayout: PageLayout = {
     Component.Flex({
       components: [{ Component: Component.Search(), grow: true }, { Component: Component.Darkmode() }],
     }),
-    Component.Explorer(),
+    Component.Explorer({
+      // Reading order, not alphabetical. Self-contained: Quartz serialises this function with toString().
+      sortFn: (a, b) => {
+        const order = ["method", "architecture", "prompting-strategies", "orchestration", "install"]
+        const ia = order.indexOf(a.slugSegment)
+        const ib = order.indexOf(b.slugSegment)
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)
+      },
+    }),
   ],
   right: [],
 }

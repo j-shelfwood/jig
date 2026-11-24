@@ -1,6 +1,9 @@
-# 1. Architecture: the layers
+---
+title: Architecture
+description: "The layers of the setup, one owner per concern, and why the prompt files live in the vault."
+---
 
-The setup separates **what the agent should always know**, **what it loads on demand**, **what it remembers**, **where project state lives**, and **what the harness enforces regardless of what the model decides**. Each concern has exactly one owner file; everything else points at it.
+This is the machinery behind [[method|the method]]. The setup separates **what the agent should always know**, **what it loads on demand**, **what it remembers**, **where project state lives**, and **what the harness enforces regardless of what the model decides**. Each concern has exactly one owner file; everything else points at it.
 
 ```mermaid
 flowchart TD
