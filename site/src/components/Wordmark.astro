@@ -1,0 +1,36 @@
+---
+// Jig brand lockup: the mark (a block with a chamfered corner and a kerf, the guide slot of a jig) and
+// the uppercase Oxanium wordmark. Inline SVG so the mark inherits currentColor like the talos BrandMark it
+// replaces in the Navbar `brand` slot. public/favicon.svg carries the same path.
+interface Props {
+  size?: number;
+  class?: string;
+}
+const { size = 22, class: className } = Astro.props;
+---
+
+<span class:list={["jig-brand", className]} role="img" aria-label="Jig">
+  <svg viewBox="0 0 32 32" width={size} height={size} aria-hidden="true" focusable="false">
+    <path d="M5 5 H14.5 V20 H17.5 V5 H22 L27 10 V27 H5 Z" fill="currentColor"></path>
+  </svg>
+  <span class="jig-brand__word">Jig</span>
+</span>
+
+<style>
+  .jig-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--talos-foreground);
+    line-height: 1;
+  }
+  .jig-brand svg { flex: none; display: block; }
+  .jig-brand__word {
+    font-family: var(--talos-font-display);
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: var(--talos-tracking-hud);
+    margin-right: calc(-1 * var(--talos-tracking-hud));
+  }
+</style>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Jig mark: a solid block with the talos top-right chamfer and a kerf, the guide slot a jig cuts
+       so every saw cut lands in the same place. Same path as src/components/Wordmark.astro. -->
+  <path d="M5 5 H14.5 V20 H17.5 V5 H22 L27 10 V27 H5 Z" fill="hsl(0 0% 95%)"/>
+</svg>

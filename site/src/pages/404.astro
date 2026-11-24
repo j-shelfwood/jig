@@ -1,0 +1,22 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import GlassPanel from "@j_shelfwood/talos-ui/astro/GlassPanel.astro";
+---
+
+<BaseLayout title="Not found" description="This page does not exist.">
+  <div class="talos-stack" style="min-height:55vh;justify-content:center;align-items:flex-start;gap:1.5rem">
+    <span class="talos-eyebrow">// 404</span>
+    <GlassPanel>
+      <div class="talos-stack" style="gap:1rem;padding:.5rem">
+        <h1 style="font-size:clamp(2rem,6vw,4rem);line-height:1">Off the guide</h1>
+        <p class="talos-muted" style="max-width:52ch;margin:0">
+          There is no page at this address. It may have moved when the docs were reorganised.
+        </p>
+        <div class="talos-row" style="gap:1rem;margin-top:.5rem">
+          <a class="talos-button" href="/">Home</a>
+          <a class="talos-button talos-button--ghost" href="/docs/">Read the docs</a>
+        </div>
+      </div>
+    </GlassPanel>
+  </div>
+</BaseLayout>

@@ -1,2 +1,6 @@
-# Website build output (site/build.sh)
-public/
+# Dependencies and website build output (site/: Astro, see site/README.md)
+node_modules/
+site/dist/
+site/.astro/
+.DS_Store
+*.log

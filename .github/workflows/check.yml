@@ -17,3 +17,11 @@ jobs:
         run: bun test payload/claude/scripts
       - name: Hook tests
         run: bash payload/claude/hooks/tests/run-all.sh
+      - name: Install site dependencies
+        run: bun install --frozen-lockfile
+      - name: Site plugin tests
+        run: bun test site/src
+      - name: Build site
+        run: bun run build
+      - name: Site links
+        run: bun site/scripts/check-links.ts

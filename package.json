@@ -1,0 +1,19 @@
+{
+  "name": "jig",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "site"
+  ],
+  "scripts": {
+    "dev": "bun --filter site dev",
+    "build": "bun --filter site build"
+  },
+  "engines": {
+    "bun": ">=1.2.0"
+  },
+  "trustedDependencies": [
+    "@j_shelfwood/talos-ui"
+  ]
+}

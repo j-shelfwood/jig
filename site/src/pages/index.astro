@@ -1,0 +1,206 @@
+---
+// Landing: the tagline, the loop, the quick start, the principles and where to read on. The content is the
+// README's front page; the method in full is /docs/method/.
+import "@j_shelfwood/talos-ui/talos-data.css";
+import "@j_shelfwood/talos-ui/talos-motion.css";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import GlassPanel from "@j_shelfwood/talos-ui/astro/GlassPanel.astro";
+import LinkCard from "@j_shelfwood/talos-ui/astro/LinkCard.astro";
+import { REPO } from "../site";
+
+const loop = [
+  ["Intake", "Every request becomes one line in a project tracker. Messages are read live, never copied."],
+  ["Shape", "A line is ready for an agent when it says <code>done when:</code> something a command can show."],
+  ["Dispatch", "Independent work goes out as parallel lanes to typed workers, each in its own worktree."],
+  ["Verify", "A worker's report is a claim until it is re-derived. \"Works\" needs a check that could have failed."],
+  ["Decide", "Reversible work is done. What is yours arrives as one question with a recommendation."],
+  ["Record", "Decisions, finished tasks and the project handoff land in the vault, so no session starts from zero."],
+  ["Retro", "Weekly, recurring friction from the agent's own transcripts becomes a hook."],
+];
+
+const principles = [
+  ["CLAUDE.md is an index, not a manual.", "One line per rule, pointing at the file that owns it. Content lives once."],
+  ["Gates are hooks, not prose.", "A rule that must hold (no force push, no untyped subagent, no message sent unasked) is enforced by the harness."],
+  ["Claims carry their instrument.", "<code>verified: &lt;command&gt; → &lt;result&gt;</code>, <code>inferred</code> or <code>assumed</code>. \"Works\" needs a check that could have failed."],
+  ["A subagent's finding is not evidence", "until the main agent or a <code>verifier</code> re-derives it."],
+  ["Reversible work is done; irreversible work is asked once,", "as a question with a recommended option. The split comes from counting which prompts were actually rejected."],
+  ["Two state stores:", "auto-memory for how to work, the vault for project state. Messages are read live, never copied."],
+  ["Close the loop:", "a weekly retro over your own transcripts turns recurring friction into hooks and doc fixes."],
+];
+---
+
+<BaseLayout>
+  <section class="hero talos-stack">
+    <span class="talos-eyebrow">// An operating method for AI agents</span>
+    <h1 class="hero__title">Agents do the work. <span>You make the decisions.</span></h1>
+    <p class="hero__lede">
+      Jig is an operating method for working with AI agents, and the kit that runs it: Claude Code as a team of
+      typed agents, with an Obsidian vault as their shared memory. You don't install it by hand: your own agent
+      interviews you and builds it.
+    </p>
+    <p class="hero__note talos-muted">
+      In woodworking, a jig guides every cut so the result is repeatable. This one does that for agent output.
+    </p>
+    <div class="talos-row hero__actions">
+      <a class="talos-button talos-button--solid" href="/docs/method/">Read the method</a>
+      <a class="talos-button talos-button--ghost" href={REPO}>View on GitHub</a>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="loop">
+    <div class="block__head">
+      <span class="talos-eyebrow">// 01</span>
+      <h2 id="loop">The loop</h2>
+    </div>
+    <ol class="loop">
+      {
+        loop.map(([name, text], i) => (
+          <li>
+            <GlassPanel class="loop__step talos-pad">
+              <span class="loop__n">{String(i + 1).padStart(2, "0")}</span>
+              <h3>{name}</h3>
+              <p set:html={text} />
+            </GlassPanel>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="block__more"><a href="/docs/method/">The method in full</a>: roles, cadences, autonomy levels, how you know it works.</p>
+  </section>
+
+  <section class="block" aria-labelledby="quick-start">
+    <div class="block__head">
+      <span class="talos-eyebrow">// 02</span>
+      <h2 id="quick-start">Quick start</h2>
+    </div>
+    <div class="talos-code quick">
+      <div class="talos-code__bar"><span>Terminal</span></div>
+      <pre class="talos-code__body"><code>git clone {REPO}.git ~/Projects/jig
+cd ~/Projects/jig
+claude</code></pre>
+    </div>
+    <p>Then type:</p>
+    <blockquote class="prompt">Read BOOTSTRAP.md and set up my machine following it. Interview me first.</blockquote>
+    <p>
+      The agent takes an inventory (read only), asks you about ten questions, shows a plan table and waits for your
+      yes. It backs up anything it would overwrite, installs, then runs checks that could fail and shows you their
+      output.
+    </p>
+    <aside class="talos-alert talos-alert--warning quick__warn">
+      <span class="talos-alert__icon" aria-hidden="true">!</span>
+      <div class="talos-alert__title">Not inside a vault</div>
+      <div class="talos-alert__body">Don't clone this inside an Obsidian vault: the templates would show up as real notes.</div>
+    </aside>
+  </section>
+
+  <section class="block" aria-labelledby="principles">
+    <div class="block__head">
+      <span class="talos-eyebrow">// 03</span>
+      <h2 id="principles">The principles behind it</h2>
+    </div>
+    <ol class="principles">
+      {principles.map(([lead, rest]) => (
+        <li><strong>{lead}</strong> <span set:html={rest} /></li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="block" aria-labelledby="read-more">
+    <div class="block__head">
+      <span class="talos-eyebrow">// 04</span>
+      <h2 id="read-more">Read more</h2>
+    </div>
+    <div class="cards">
+      <LinkCard href="/docs/" title="Docs" eyebrow="The method, architecture, prompting strategies, orchestration" class="talos-pad" />
+      <LinkCard href={`${REPO}/blob/main/BOOTSTRAP.md`} title="BOOTSTRAP.md" eyebrow="The procedure your agent follows" class="talos-pad" />
+      <LinkCard href={REPO} title="Source on GitHub" eyebrow="MIT licensed" class="talos-pad" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero { padding-block: 4rem 2rem; gap: 1.25rem; max-width: 52rem; }
+  .hero__title {
+    font-size: clamp(2.1rem, 6vw, 4.4rem);
+    line-height: 1.04;
+    letter-spacing: 0.06em;
+    overflow-wrap: break-word;
+  }
+  .hero__title span { color: var(--talos-muted-foreground); }
+  .hero__lede {
+    margin: 0;
+    max-width: 58ch;
+    font-family: var(--talos-font-body);
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    line-height: 1.65;
+    color: hsl(var(--talos-foreground-hsl) / 0.86);
+  }
+  .hero__note { margin: 0; font-size: 0.85rem; letter-spacing: 0.04em; }
+  .hero__actions { margin-top: 0.75rem; }
+
+  .block { margin-block: 5rem; }
+  .block__head { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem; }
+  .block h2 { font-size: clamp(1.3rem, 2.6vw, 1.8rem); }
+  .block p,
+  .principles li {
+    font-family: var(--talos-font-body);
+    line-height: 1.65;
+    color: hsl(var(--talos-foreground-hsl) / 0.86);
+    max-width: 70ch;
+  }
+  .block :global(code) {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.85em;
+    padding: 0.1em 0.35em;
+    background: var(--talos-surface-2);
+    border: 1px solid var(--talos-edge-subtle);
+    border-radius: var(--talos-radius-sm);
+  }
+  .block a:not(.talos-linkcard) {
+    color: var(--talos-accent);
+    text-decoration: none;
+    border-bottom: 1px solid hsl(var(--talos-accent-hsl) / 0.35);
+  }
+
+  .loop {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+  .loop li { display: flex; }
+  .loop :global(.loop__step) { width: 100%; }
+  .loop__n { font-size: 0.7rem; letter-spacing: var(--talos-tracking-hud); color: var(--talos-accent); }
+  .loop h3 { font-size: 1rem; margin: 0.4rem 0 0.6rem; }
+  .loop p { margin: 0; font-size: 0.9rem; line-height: 1.55; }
+  .block__more { margin-top: 1.5rem; }
+
+  .quick { max-width: 70ch; }
+  .quick .talos-code__body code { padding: 0; border: 0; background: none; font-size: inherit; }
+  .prompt {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-left: 2px solid var(--talos-accent);
+    background: var(--talos-surface-1);
+    font-family: var(--talos-font-body);
+    max-width: 70ch;
+  }
+  .quick__warn { max-width: 70ch; box-sizing: border-box; }
+
+  .principles { margin: 0; padding-left: 1.4rem; display: grid; gap: 0.75rem; }
+  .principles li::marker { color: var(--talos-accent); }
+  .principles strong { color: var(--talos-text-primary); font-weight: 500; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1rem;
+  }
+
+  @media (max-width: 600px) {
+    .hero { padding-block: 2rem 1rem; }
+    .block { margin-block: 3.5rem; }
+  }
+</style>

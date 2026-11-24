@@ -1,0 +1,141 @@
+---
+// BaseLayout: the one document shell for every page. Owns the doctype, <head> (+ Meta), the ambient
+// overlay, the talos Navbar pill with the Jig wordmark, the Footer, and the global shell CSS. The landing,
+// the docs (DocsShell) and the 404 page are thin wrappers over it. Copied in shape from the talos-ui
+// showcase site, which is built the same way.
+//
+// Layout authors choose how content sits under the fixed nav:
+//   - `main` (default): wraps the slot in a centered <main> already offset below the nav.
+//   - `bare`: raw slot; the layout supplies its own frame and reads var(--site-nav-h) to clear the pill.
+import "@j_shelfwood/talos-ui/talos.css";
+import "@j_shelfwood/talos-ui/talos-layout.css";
+import "@j_shelfwood/talos-ui/talos-feedback.css";
+import "@j_shelfwood/talos-ui/talos-nav.css";
+import "@j_shelfwood/talos-ui/talos-marketing.css";
+import Navbar from "@j_shelfwood/talos-ui/astro/Navbar.astro";
+import Footer from "@j_shelfwood/talos-ui/astro/Footer.astro";
+import type { TocHeading } from "@j_shelfwood/talos-ui/astro/Navbar.astro";
+import Meta from "../components/Meta.astro";
+import Wordmark from "../components/Wordmark.astro";
+import { REPO } from "../site";
+const navLinks = [
+  { label: "Method", href: "/docs/method/", key: "method" },
+  { label: "Docs", href: "/docs/", key: "docs" },
+  { label: "GitHub", href: REPO, key: "github" },
+];
+const footerLinks = [
+  { label: "The method", href: "/docs/method/" },
+  { label: "Docs", href: "/docs/" },
+  { label: "Install", href: "/docs/install/" },
+  { label: "Source on GitHub", href: REPO },
+];
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Which nav link to mark active. */
+  navActive?: string;
+  /** "main" wraps the slot in a centered, nav-offset <main>; "bare" leaves it raw. */
+  frame?: "main" | "bare";
+  /** Headings for the in-pill "On this page" menu (docs pages). */
+  toc?: TocHeading[];
+}
+const {
+  title = "Jig",
+  description = "An operating method for working with AI agents, and the kit that runs it. Agents do the work. You make the decisions.",
+  navActive,
+  frame = "main",
+  toc,
+} = Astro.props;
+const pageTitle = title === "Jig" ? "Jig: agents do the work, you make the decisions" : `${title} | Jig`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <Meta title={pageTitle} description={description} />
+  </head>
+  <body>
+    <div class="ambient-overlay"></div>
+    <Navbar links={navLinks} active={navActive} homeHref="/" toc={toc}>
+      <Wordmark slot="brand" />
+    </Navbar>
+
+    {
+      frame === "main" ? (
+        <main class="base-main"><slot /></main>
+      ) : (
+        <slot />
+      )
+    }
+
+    <div class="site-footer">
+      <Footer links={footerLinks} contactHeading="" tagline="MIT licensed" copyright="Jig">
+        <Wordmark slot="brand" size={26} />
+      </Footer>
+    </div>
+
+    <script>
+      // Track the cursor for the ambient grid (the package's lerped tracker) and feed the per-panel sheen.
+      import { initAmbientCursor } from "@j_shelfwood/talos-ui/ambient";
+      initAmbientCursor();
+      document.querySelectorAll<HTMLElement>(".interactive-panel").forEach((p) => {
+        p.addEventListener("pointermove", (e) => {
+          const r = p.getBoundingClientRect();
+          p.style.setProperty("--talos-mx", `${((e.clientX - r.left) / r.width) * 100}%`);
+          p.style.setProperty("--talos-my", `${((e.clientY - r.top) / r.height) * 100}%`);
+        });
+      });
+    </script>
+
+    <style is:global>
+      :root {
+        color-scheme: dark;
+        /* Height the fixed Navbar pill reserves at the top of every page. */
+        --site-nav-h: 5.5rem;
+      }
+      html { background: var(--talos-background); scroll-padding-top: calc(var(--site-nav-h) + 1rem); }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--talos-foreground);
+        font-family: var(--talos-font-display);
+        font-weight: 300;
+        letter-spacing: 0.01em;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1, h2, h3 {
+        font-weight: 300;
+        text-transform: uppercase;
+        letter-spacing: var(--talos-tracking-hud);
+        margin: 0;
+      }
+      .base-main {
+        position: relative;
+        z-index: 2;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: calc(var(--site-nav-h) + 2rem) 1.5rem 4rem;
+      }
+      /* The pill holds the wordmark, three links and (on docs pages) the TOC toggle; on a phone the
+         package's default gaps and padding push the last link out of the pill. */
+      @media (max-width: 520px) {
+        .talos-navbar { --talos-navbar-gap: 0.85rem; padding-inline: 0.5rem; }
+        .talos-navbar-pill { padding-inline: 1rem; max-width: calc(100vw - 1rem); }
+        .talos-navbar .talos-nav-link { letter-spacing: 0.04em; }
+        .talos-navbar .talos-toc .talos-nav-text { display: none; }
+      }
+      .site-footer {
+        position: relative;
+        z-index: 2;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 1.5rem 2rem;
+      }
+    </style>
+  </body>
+</html>

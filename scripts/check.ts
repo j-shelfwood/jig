@@ -13,11 +13,21 @@ const ROOT = join(import.meta.dir, "..");
 const failures: string[] = [];
 const fail = (check: string, msg: string) => failures.push(`${check}: ${msg}`);
 
+// Generated folders are skipped: .git, and every folder .gitignore names with a trailing slash (node_modules/
+// anywhere, site/dist/ and site/.astro/ by path), so a new build output needs only its .gitignore line.
+const ignoredDirs = readFileSync(join(ROOT, ".gitignore"), "utf8")
+  .split("\n")
+  .map((l) => l.trim())
+  .filter((l) => l.endsWith("/") && !l.startsWith("#") && !l.startsWith("!"))
+  .map((l) => l.replace(/^\//, "").replace(/\/$/, ""));
+const isIgnoredDir = (rel: string, name: string) =>
+  name === ".git" || ignoredDirs.some((d) => (d.includes("/") ? rel === d : name === d));
+
 function walk(dir: string): string[] {
   const out: string[] = [];
   for (const name of readdirSync(dir)) {
-    if (name === ".git" || name === "node_modules") continue;
     const p = join(dir, name);
+    if (statSync(p).isDirectory() && isIgnoredDir(relative(ROOT, p), name)) continue;
     if (statSync(p).isDirectory()) out.push(...walk(p));
     else out.push(p);
   }
@@ -69,9 +79,9 @@ for (const m of read("payload/claude/CLAUDE.md").matchAll(/^@<<VAULT>>\/<<AGENT_
 }
 if (/^@(?!<<VAULT>>\/<<AGENT_DIR>>\/)/m.test(read("payload/claude/CLAUDE.md"))) fail("import", "an @import outside <<VAULT>>/<<AGENT_DIR>>/");
 
-// 6. Backticked payload/… and docs/… paths in the docs exist (a trailing / means a folder; {a,b} and * are expanded loosely).
+// 6. Backticked payload/…, docs/…, scripts/… and site/… paths in the docs exist (a trailing / means a folder; {a,b} and * are expanded loosely).
 for (const f of ["README.md", "BOOTSTRAP.md", ...files.filter((f) => f.startsWith("docs/"))].filter((f) => existsSync(join(ROOT, f)))) {
-  for (const m of read(f).matchAll(/`((?:payload|docs|scripts)\/[^`\s]*)`/g)) {
+  for (const m of read(f).matchAll(/`((?:payload|docs|scripts|site)\/[^`\s]*)`/g)) {
     const raw = m[1].replace(/\{([^}]*)\}/, (_, alts) => alts.split(",")[0]);
     const base = raw.split("*")[0].replace(/\/$/, "");
     if (!existsSync(join(ROOT, base))) fail("path", `${f} mentions \`${m[1]}\`, which does not exist`);
