@@ -148,7 +148,7 @@ export function generate() {
       retro: {
         step: step(steps, 7),
         fix: { hook: pushGuard.name, why: pushGuard.why, what: pushGuard.what, tests: runHookTests(pushGuard) },
-        blocks: blocks.map((b) => ({ ...b, tests: runHookTests(hookByName(hooks, b.run.hook)) })),
+        blocks: blocks.map((b) => ({ ...b, event: hookByName(hooks, b.run.hook).event, tests: runHookTests(hookByName(hooks, b.run.hook)) })),
       },
     },
     inline: { schemaTags: schema.tags.map((t) => ({ tag: t.tag.replace(/`/g, ""), meaning: inlineHtml(t.meaning.replace(/<<NAME>>/g, "you")) })) },

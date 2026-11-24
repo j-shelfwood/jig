@@ -76,6 +76,7 @@ const T0 = 2000; // line appears
   .mail p { margin: 0.2rem 0 0; font-family: var(--talos-font-body); font-size: 0.88rem; line-height: 1.5; }
   .new { margin: 0.1rem -0.4rem; padding: 0.1rem 0.4rem 0.1rem 1.85rem; }
   .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.6rem 1.2rem; margin: 0; font-size: 0.78rem; }
-  .legend div { display: grid; gap: 0.25rem; }
+  .legend div { display: grid; grid-template-rows: subgrid; grid-row: span 2; gap: 0.25rem; align-items: start; }
+  .legend dt { align-self: end; }
   .legend dd { margin: 0; color: var(--talos-muted-foreground); font-family: var(--talos-font-body); line-height: 1.5; }
 </style>

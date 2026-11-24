@@ -145,3 +145,12 @@ test("generate() fills every scene from the repository", () => {
   expect(kit.demo.runs.queue.out).toContain("Email a receipt after checkout");
   expect(kit.demo.runs.lintAfter.out).toContain("0 stale-handoff");
 }, 30000);
+
+test("invalid settings.json fails naming the file", () => {
+  const { mkdtempSync, cpSync, writeFileSync } = require("node:fs") as typeof import("node:fs");
+  const { tmpdir } = require("node:os") as typeof import("node:os");
+  const root = mkdtempSync(join(tmpdir(), "jig-settings-"));
+  cpSync(join(ROOT, "payload/claude"), join(root, "payload/claude"), { recursive: true });
+  writeFileSync(join(root, "payload/claude/settings.json"), "{,");
+  expect(() => loadHooks(root)).toThrow(/^payload\/claude\/settings\.json: is not valid JSON/);
+});

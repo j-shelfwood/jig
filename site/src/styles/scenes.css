@@ -138,7 +138,7 @@
 .tl--hit { color: var(--talos-foreground); }
 .tl--bad { color: hsl(var(--talos-danger-hsl)); }
 .tl--good { color: hsl(var(--talos-success-hsl)); }
-.tl--hl { background: hsl(var(--talos-foreground-hsl) / 0.07); box-shadow: inset 2px 0 0 var(--talos-foreground); }
+.tl--hl { background: hsl(var(--talos-foreground-hsl) / 0.07); box-shadow: inset 2px 0 0 var(--talos-foreground); margin-inline: -0.5rem; padding-inline: 0.5rem; }
 
 /* vault pane: a file tree and a note, Obsidian-like */
 .pane__body { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); min-width: 0; }
@@ -240,3 +240,14 @@
 }
 .flow { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .flow svg { width: 1rem; height: 1rem; color: var(--talos-muted-foreground); }
+
+/* ---- page-wide: one code font, visible keyboard focus, tap targets ------------------------------------ */
+code, kbd, samp { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+main a:focus-visible, main button:focus-visible, .talos-navbar a:focus-visible {
+  outline: 2px solid var(--talos-foreground);
+  outline-offset: 3px;
+}
+.scene__actions a { display: inline-flex; align-items: center; min-height: 1.5rem; }
+@media (max-width: 640px) {
+  .talos-navbar .talos-nav-link { display: inline-flex; align-items: center; min-height: 1.5rem; }
+}

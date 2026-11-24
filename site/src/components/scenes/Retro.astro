@@ -10,6 +10,7 @@ interface Props { kit: Kit }
 const { kit } = Astro.props;
 const r = kit.scenes.retro;
 const clusters = kit.demo.runs.clusters;
+const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const T = 2600;
 const badge: Record<string, string> = { deny: "chip--bad", ask: "chip--warn", block: "chip--bad", context: "chip--dim" };
@@ -41,7 +42,7 @@ const badge: Record<string, string> = { deny: "chip--bad", ask: "chip--warn", bl
         return (
           <div class="blk">
             <span class="tl tool a a-fade" style={`--d:${t}ms`}>● {b.call}</span>
-            <span class="tl a a-fade" style={`--d:${t + 700}ms`}>  ⎿ <span class={`chip talos-chamfer talos-chamfer--flag ${badge[b.run.decision] ?? "chip--dim"}`}>{b.run.decision}</span> <span class="tl--muted">PreToolUse hook {b.run.hook}.sh</span></span>
+            <span class="tl a a-fade" style={`--d:${t + 700}ms`}>  ⎿ <span class={`chip talos-chamfer talos-chamfer--flag ${badge[b.run.decision] ?? "chip--dim"}`}>{b.run.decision}</span> <span class="tl--muted">{b.event} hook {b.run.hook}.sh</span></span>
             <span class="tl reason a a-fade" style={`--d:${t + 1100}ms`}>{b.run.reason}</span>
             <span class="tl tl--muted reason a a-fade" style={`--d:${t + 1500}ms`}>✓ {b.tests}</span>
           </div>
@@ -58,7 +59,7 @@ const badge: Record<string, string> = { deny: "chip--bad", ask: "chip--warn", bl
           {kit.hooks.map((h) => (
             <tr>
               <td><code>{h.name}</code><span class="hooks__what">{cap(h.what)}</span></td>
-              <td>{h.event}{h.matcher && <span class="hooks__m">{h.matcher}</span>}</td>
+              <td>{h.event}{h.matcher && <span class="hooks__m" set:html={escapeHtml(h.matcher).replaceAll("|", "|<wbr>")} />}</td>
               <td>{h.decisions.map((d) => <span class={`chip talos-chamfer talos-chamfer--flag ${badge[d] ?? "chip--dim"}`}>{d}</span>)}</td>
               <td class="hooks__why">{cap(h.why)}</td>
             </tr>
@@ -92,7 +93,7 @@ const badge: Record<string, string> = { deny: "chip--bad", ask: "chip--warn", bl
   td { vertical-align: top; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--talos-edge-subtle); line-height: 1.45; }
   td code { font-size: 0.75rem; }
   .hooks__what, .hooks__m { display: block; margin-top: 0.2rem; color: var(--talos-muted-foreground); font-size: 0.72rem; }
-  .hooks__m { font-family: ui-monospace, Menlo, monospace; font-size: 0.66rem; overflow-wrap: anywhere; }
+  .hooks__m { font-family: ui-monospace, Menlo, monospace; font-size: 0.66rem; overflow-wrap: break-word; }
   .hooks__why { color: hsl(var(--talos-foreground-hsl) / 0.78); }
   td .chip { margin: 0 0.25rem 0.25rem 0; }
   @media (max-width: 640px) {

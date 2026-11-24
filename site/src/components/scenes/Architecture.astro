@@ -35,7 +35,7 @@ const at = (a: number, b: number) => (a + 0.6 * (b - a)).toFixed(1);
       {[false, true].map((mobile) => (
         <svg class:list={["map__edges", mobile ? "map__edges--m" : "map__edges--d"]} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           {lines(mobile).map((l) => (
-            <line x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} pathLength="100" class:list={["edge a", l.dashed ? "edge--dashed a-fade" : "a-draw"]} data-from={l.from} data-to={l.to} style={`--d:${300 + l.i * 350}ms;--t:700ms;--len:100`} />
+            <line x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} class:list={["edge a a-fade", l.dashed && "edge--dashed"]} data-from={l.from} data-to={l.to} style={`--d:${300 + l.i * 350}ms;--t:700ms`} />
           ))}
         </svg>
       ))}
@@ -82,7 +82,7 @@ const at = (a: number, b: number) => (a + 0.6 * (b - a)).toFixed(1);
   .map { position: relative; aspect-ratio: 16 / 9; min-height: 20rem; }
   .map__edges { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; overflow: visible; }
   .map__edges--m { display: none; }
-  .edge { stroke: var(--talos-edge-strong); stroke-width: 1.2; vector-effect: non-scaling-stroke; stroke-dasharray: 100; }
+  .edge { stroke: var(--talos-edge-strong); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
   .edge--dashed { stroke-dasharray: 4 4; stroke: var(--talos-muted-foreground); }
   .map__elabel {
     position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%);
@@ -93,7 +93,7 @@ const at = (a: number, b: number) => (a + 0.6 * (b - a)).toFixed(1);
   .map__elabel { z-index: 1; }
   .node {
     --_edge: var(--talos-edge-default);
-    --_fill: hsl(0 0% 5% / 0.96);
+    --_fill: hsl(0 0% 5%);
     position: absolute; left: var(--x); top: var(--y); translate: -50% -50%;
     display: grid; justify-items: center; gap: 0.15rem;
     width: 9.5rem; padding: 0.55rem 0.5rem;

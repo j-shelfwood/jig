@@ -65,7 +65,13 @@ function decisionsOf(script: string): string[] {
 }
 
 export function loadHooks(root = ROOT): Hook[] {
-  const settings = JSON.parse(readSource(SETTINGS, root));
+  let settings: { hooks?: Record<string, any[]> };
+  try {
+    settings = JSON.parse(readSource(SETTINGS, root));
+  } catch (e) {
+    if (e instanceof SourceError) throw e;
+    throw new SourceError(SETTINGS, `is not valid JSON: ${(e as Error).message}`);
+  }
   const hooks: Hook[] = [];
   for (const [event, groups] of Object.entries<any[]>(settings.hooks ?? {}))
     for (const g of groups)

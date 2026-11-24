@@ -14,7 +14,7 @@ const docsDir = fileURLToPath(new URL("../docs", import.meta.url));
 export default defineConfig({
   site: "https://jig.shelfwood.co",
   build: { format: "directory" },
-  // Lucide icons through astro-icon (the same setup as monitor.shelfwood.co): inlined as SVG at build time,
+  // Lucide icons through astro-icon: inlined as SVG at build time,
   // no icon font and no runtime JS.
   integrations: [icon()],
   // mermaid (with its diagram chunks) is the one large bundle; src/scripts/mermaid.ts imports it lazily,
