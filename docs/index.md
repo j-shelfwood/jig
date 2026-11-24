@@ -1,9 +1,9 @@
 ---
-title: agent-setup-blueprint
+title: Jig
 description: "An operating method and a kit for having Claude Code agents do your work, with an Obsidian vault as their shared memory."
 ---
 
-An operating method for having agents do your work while you make only the decisions, and the kit that runs it: Claude Code as a team of typed agents, with an Obsidian vault as their shared memory.
+**Agents do the work. You make the decisions.** Jig is an operating method for working with AI agents, and the kit that runs it: Claude Code as a team of typed agents, with an Obsidian vault as their shared memory.
 
 > [!tip] Start here
 > 1. Read [[method|the method]]: the loop, the roles, the autonomy levels.
@@ -22,4 +22,4 @@ An operating method for having agents do your work while you make only the decis
 
 ## Where it comes from
 
-Extracted from a setup used every day for freelance software work across several client projects. Every personal value is a placeholder, and every rule keeps the reason (often a measured failure rate) that made it necessary. Open source under the MIT license, on [GitHub](https://github.com/j-shelfwood/agent-setup-blueprint).
+Extracted from a setup used every day for freelance software work across several client projects. Every personal value is a placeholder, and every rule keeps the reason (often a measured failure rate) that made it necessary. Open source under the MIT license, on [GitHub](https://github.com/j-shelfwood/jig).

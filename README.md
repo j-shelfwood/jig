@@ -1,16 +1,18 @@
-# agent-setup-blueprint
+# Jig
 
-[![check](https://github.com/j-shelfwood/agent-setup-blueprint/actions/workflows/check.yml/badge.svg)](https://github.com/j-shelfwood/agent-setup-blueprint/actions/workflows/check.yml)
+**Agents do the work. You make the decisions.**
 
-A blueprint for running [Claude Code](https://code.claude.com/docs/en/overview) as a team of typed agents, with an Obsidian vault as their shared memory. **You don't install it by hand: you give it to your own Claude Code agent, which interviews you and builds the setup on your machine.**
+[![check](https://github.com/j-shelfwood/jig/actions/workflows/check.yml/badge.svg)](https://github.com/j-shelfwood/jig/actions/workflows/check.yml)
+
+Jig is an operating method for working with AI agents, and the kit that runs it: [Claude Code](https://code.claude.com/docs/en/overview) as a team of typed agents, with an Obsidian vault as their shared memory. In woodworking, a jig guides every cut so the result is repeatable; this one does that for agent output. **You don't install it by hand: you give it to your own Claude Code agent, which interviews you and builds the setup on your machine.**
 
 It is extracted from a setup used every day for freelance software work across several client projects. Every personal value was replaced by a `<<PLACEHOLDER>>`, and every rule keeps the reason (often a measured failure rate) that made it necessary.
 
 ## Quick start
 
 ```sh
-git clone https://github.com/j-shelfwood/agent-setup-blueprint.git ~/Projects/agent-setup-blueprint
-cd ~/Projects/agent-setup-blueprint
+git clone https://github.com/j-shelfwood/jig.git ~/Projects/jig
+cd ~/Projects/jig
 claude
 ```
 
@@ -75,11 +77,7 @@ CI runs all three on every push.
 
 ## Website
 
-Website: [j-shelfwood.github.io/agent-setup-blueprint](https://j-shelfwood.github.io/agent-setup-blueprint/), a landing page plus `docs/` rendered with Quartz at `/docs/`. Build it locally (needs Node 22 or later; Quartz is cloned at a pinned tag into `~/.cache` on first run) and preview it with a server that resolves extensionless links:
-
-```sh
-bash site/build.sh && bunx serve public
-```
+Website: [jig.shelfwood.co](https://jig.shelfwood.co/), the landing page and the method docs, built from `docs/` and `site/` (see `site/README.md`).
 
 ## License
 

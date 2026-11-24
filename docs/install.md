@@ -6,8 +6,8 @@ description: "How the setup reaches your machine, through your own Claude Code a
 You don't install this by hand. Your own Claude Code agent reads `BOOTSTRAP.md`, interviews you and builds the setup.
 
 ```sh
-git clone https://github.com/j-shelfwood/agent-setup-blueprint.git ~/Projects/agent-setup-blueprint
-cd ~/Projects/agent-setup-blueprint
+git clone https://github.com/j-shelfwood/jig.git ~/Projects/jig
+cd ~/Projects/jig
 claude
 ```
 
@@ -34,4 +34,4 @@ flowchart TD
 > [!warning] Don't clone into an Obsidian vault
 > The templates in `payload/vault/` would show up as real notes in your vault.
 
-The full procedure: [BOOTSTRAP.md](https://github.com/j-shelfwood/agent-setup-blueprint/blob/main/BOOTSTRAP.md). After the install, start with week 1 of [[method#Adopting it|adopting the method]].
+The full procedure: [BOOTSTRAP.md](https://github.com/j-shelfwood/jig/blob/main/BOOTSTRAP.md). After the install, start with week 1 of [[method#Adopting it|adopting the method]].
