@@ -17,17 +17,19 @@ if (motion && "IntersectionObserver" in window) {
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
-        const el = e.target as HTMLElement;
+        const el = (e.target as HTMLElement).closest<HTMLElement>("[data-scene]")!;
         if (el.hasAttribute("data-loop")) el.classList.toggle("is-playing", e.isIntersecting);
         else if (e.isIntersecting && !el.classList.contains("is-playing")) {
           play(el);
-          io.unobserve(el);
+          io.unobserve(e.target);
         }
       }
     },
-    { threshold: 0.35 },
+    // A scene plays when the top of its stage passes the lower quarter of the viewport. A ratio threshold
+    // would never fire for a stage taller than the viewport (the record scene on a phone).
+    { rootMargin: "0px 0px -25% 0px", threshold: 0 },
   );
-  scenes.forEach((s) => io.observe(s));
+  scenes.forEach((s) => io.observe(s.querySelector(".scene__stage") ?? s));
 } else {
   scenes.forEach((s) => s.classList.add("is-playing"));
 }

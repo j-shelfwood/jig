@@ -43,6 +43,7 @@ const badge: Record<string, string> = { deny: "chip--bad", ask: "chip--warn", bl
             <span class="tl tool a a-fade" style={`--d:${t}ms`}>● {b.call}</span>
             <span class="tl a a-fade" style={`--d:${t + 700}ms`}>  ⎿ <span class={`chip talos-chamfer talos-chamfer--flag ${badge[b.run.decision] ?? "chip--dim"}`}>{b.run.decision}</span> <span class="tl--muted">PreToolUse hook {b.run.hook}.sh</span></span>
             <span class="tl reason a a-fade" style={`--d:${t + 1100}ms`}>{b.run.reason}</span>
+            <span class="tl tl--muted reason a a-fade" style={`--d:${t + 1500}ms`}>✓ {b.tests}</span>
           </div>
         );
       })}
