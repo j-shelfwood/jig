@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>agent-setup-blueprint</title>
+  <meta name="description" content="A blueprint for running Claude Code as a team of typed agents, with an Obsidian vault as their shared memory. Your own agent interviews you and builds it.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <span class="name">agent-setup-blueprint</span>
+    <nav>
+      <a href="docs/">Docs</a>
+      <a href="https://github.com/j-shelfwood/agent-setup-blueprint">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Claude Code as a team of typed agents, with an Obsidian vault as their memory.</h1>
+      <p class="lede">You don't install it by hand. You give it to your own Claude Code agent, which interviews you and builds the setup on your machine.</p>
+      <p class="actions">
+        <a class="button" href="docs/">Read the docs</a>
+        <a class="button secondary" href="https://github.com/j-shelfwood/agent-setup-blueprint">View on GitHub</a>
+      </p>
+    </section>
+
+    <section>
+      <h2>Quick start</h2>
+      <pre><code>git clone https://github.com/j-shelfwood/agent-setup-blueprint.git ~/Projects/agent-setup-blueprint
+cd ~/Projects/agent-setup-blueprint
+claude</code></pre>
+      <p>Then type:</p>
+      <blockquote>Read BOOTSTRAP.md and set up my machine following it. Interview me first.</blockquote>
+      <p>The agent takes an inventory (read only), asks you about ten questions, shows a plan table and waits for your yes. It backs up anything it would overwrite, installs, then runs checks that could fail and shows you their output.</p>
+      <p class="note">Don't clone this inside an Obsidian vault: the templates would show up as real notes.</p>
+    </section>
+
+    <section>
+      <h2>The ideas in one screen</h2>
+      <ol class="ideas">
+        <li><strong>CLAUDE.md is an index, not a manual.</strong> One line per rule, pointing at the file that owns it. Content lives once.</li>
+        <li><strong>Gates are hooks, not prose.</strong> A rule that must hold (no force push, no untyped subagent, no message sent unasked) is enforced by the harness.</li>
+        <li><strong>Claims carry their instrument.</strong> <code>verified: &lt;command&gt; → &lt;result&gt;</code>, <code>inferred</code> or <code>assumed</code>. "Works" needs a check that could have failed.</li>
+        <li><strong>A subagent's finding is not evidence</strong> until the main agent or a <code>verifier</code> re-derives it.</li>
+        <li><strong>Reversible work is done; irreversible work is asked once,</strong> as a question with a recommended option. The split comes from counting which prompts were actually rejected.</li>
+        <li><strong>Two state stores:</strong> auto-memory for how to work, the vault for project state. Messages are read live, never copied.</li>
+        <li><strong>Close the loop:</strong> a weekly retro over your own transcripts turns recurring friction into hooks and doc fixes.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Read more</h2>
+      <ul class="links">
+        <li><a href="docs/">Docs</a>: architecture, prompting strategies and orchestration</li>
+        <li><a href="https://github.com/j-shelfwood/agent-setup-blueprint/blob/main/BOOTSTRAP.md">BOOTSTRAP.md</a>: the procedure your agent follows</li>
+        <li><a href="https://github.com/j-shelfwood/agent-setup-blueprint">Source on GitHub</a>, MIT licensed</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>Open source under the MIT license. Extracted from a setup used every day for freelance software work; every personal value is a placeholder.</p>
+  </footer>
+</body>
+</html>

@@ -72,6 +72,14 @@ bash payload/claude/hooks/tests/run-all.sh  # hook fixture tests, ends with "fai
 
 CI runs all three on every push.
 
+## Website
+
+Website: [j-shelfwood.github.io/agent-setup-blueprint](https://j-shelfwood.github.io/agent-setup-blueprint/), a landing page plus `docs/` rendered with Quartz at `/docs/`. Build it locally (needs Node 22 or later; Quartz is cloned at a pinned tag into `~/.cache` on first run) and preview it with a server that resolves extensionless links:
+
+```sh
+bash site/build.sh && bunx serve public
+```
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
