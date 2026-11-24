@@ -4,14 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "gen": "bun scripts/gen.ts",
+    "dev": "bun scripts/gen.ts && astro dev",
+    "build": "bun scripts/gen.ts && astro build",
     "preview": "astro preview",
-    "test": "bun test src"
+    "test": "bun test src scripts"
   },
   "dependencies": {
+    "@iconify-json/lucide": "1.2.158",
     "@j_shelfwood/talos-ui": "0.12.1",
     "astro": "5.18.2",
+    "astro-icon": "1.2.0",
     "github-slugger": "2.0.0",
     "mdast-util-to-string": "4.0.0",
     "mermaid": "11.17.2",

@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import remarkWikilinks from "./src/plugins/remark-wikilinks.ts";
 import remarkCallouts from "./src/plugins/remark-callouts.ts";
 import talosCodeTheme from "./talos-code-theme.mjs";
+import icon from "astro-icon";
 
 // The content is ../docs, a plain Obsidian folder that is also read on GitHub and in Obsidian itself. The
 // two local remark plugins translate its Obsidian syntax (wikilinks, callouts) at build time, so docs/
@@ -13,6 +14,9 @@ const docsDir = fileURLToPath(new URL("../docs", import.meta.url));
 export default defineConfig({
   site: "https://jig.shelfwood.co",
   build: { format: "directory" },
+  // Lucide icons through astro-icon (the same setup as monitor.shelfwood.co): inlined as SVG at build time,
+  // no icon font and no runtime JS.
+  integrations: [icon()],
   // mermaid (with its diagram chunks) is the one large bundle; src/scripts/mermaid.ts imports it lazily,
   // only on pages with a diagram.
   vite: { build: { chunkSizeWarningLimit: 1500 } },

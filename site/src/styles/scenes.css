@@ -1,0 +1,242 @@
+/* scenes.css: the landing-page scene system.
+ *
+ * Every animated element's resting style is its FINAL frame. An animation only describes where it starts
+ * (`from`), so with no JavaScript, with prefers-reduced-motion, or before a scene is reached, the page shows
+ * the finished state and nothing moves. `html.motion` (set by an inline script when motion is allowed) arms
+ * the animations paused at their first frame; src/scripts/scenes.ts adds `.is-playing` to a scene when it
+ * scrolls into view, and `.is-reset` for one frame to replay it. Only opacity, transform and clip-path move,
+ * so nothing shifts the layout.
+ *
+ * Per element: class `a` plus one kind (`a-fade`, `a-pop`, `a-type`, `a-out`, `a-bar`, `a-draw`, `a-flash`),
+ * and the custom properties --d (delay) and --t (duration).
+ */
+
+.motion .scene .a {
+  animation-delay: var(--d, 0ms);
+  animation-duration: var(--t, 420ms);
+  animation-fill-mode: both;
+  animation-timing-function: var(--talos-ease-out);
+  animation-play-state: paused;
+}
+.motion .scene.is-playing .a { animation-play-state: running; }
+.motion .scene.is-reset .a { animation: none !important; }
+
+.motion .scene .a-fade { animation-name: a-fade; }
+.motion .scene .a-pop { animation-name: a-pop; animation-timing-function: var(--talos-ease-liquid); }
+.motion .scene .a-type { animation-name: a-type; animation-timing-function: steps(var(--steps, 24), end); }
+.motion .scene .a-out { animation-name: a-out; }
+.motion .scene .a-bar { animation-name: a-bar; animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1); }
+.motion .scene .a-draw { animation-name: a-draw; animation-timing-function: ease-in-out; }
+.motion .scene .a-flash { animation-name: a-flash; animation-timing-function: ease-out; }
+
+@keyframes a-fade { from { opacity: 0; transform: translateY(6px); } }
+@keyframes a-pop { from { opacity: 0; transform: scale(0.6); } }
+@keyframes a-type { from { clip-path: inset(0 100% 0 0); } }
+/* a-out: visible during the delay, then gone; its resting style is hidden. */
+.a-out { opacity: 0; }
+@keyframes a-out { from { opacity: 1; } }
+@keyframes a-bar { from { transform: scaleX(0); } }
+@keyframes a-draw { from { stroke-dashoffset: var(--len, 400); } }
+@keyframes a-flash {
+  from { background-color: hsl(var(--talos-foreground-hsl) / 0.22); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene .a, .ring * { animation: none !important; }
+}
+
+/* ---- swap stack: an old and a new state in one grid cell, so the swap never moves the layout ---------- */
+.swap { display: inline-grid; }
+.swap > * { grid-area: 1 / 1; }
+
+/* ---- scene frame -------------------------------------------------------------------------------------- */
+.scene {
+  display: grid;
+  grid-template-columns: minmax(0, 19rem) minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+  margin-block: 6rem;
+  scroll-margin-top: calc(var(--site-nav-h) + 1rem);
+}
+.scene__text { position: sticky; top: calc(var(--site-nav-h) + 1.5rem); display: grid; gap: 0.9rem; }
+.scene__text h2 { font-size: clamp(1.25rem, 2.4vw, 1.7rem); }
+.scene__text p { margin: 0; }
+.scene__stage { min-width: 0; display: grid; gap: 1rem; }
+.scene__meta { margin: 0; display: grid; gap: 0.5rem; font-size: 0.85rem; }
+.scene__meta div { display: grid; gap: 0.1rem; }
+.scene__meta dt {
+  font-family: var(--talos-font-display);
+  font-size: 0.62rem;
+  letter-spacing: var(--talos-tracking-hud);
+  text-transform: uppercase;
+  color: var(--talos-muted-foreground);
+}
+.scene__meta dd { margin: 0; color: hsl(var(--talos-foreground-hsl) / 0.82); }
+.scene__actions { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; font-size: 0.8rem; }
+.replay {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  font: inherit;
+  font-family: var(--talos-font-display);
+  font-size: 0.68rem;
+  letter-spacing: var(--talos-tracking-hud-tight);
+  text-transform: uppercase;
+  color: var(--talos-muted-foreground);
+  background: none;
+  border: 1px solid var(--talos-edge-subtle);
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+}
+.motion .replay { display: inline-flex; }
+.replay:hover, .replay:focus-visible { color: var(--talos-foreground); border-color: var(--talos-edge-strong); }
+.replay:focus-visible { outline: var(--talos-focus-ring-width, 2px) solid var(--talos-foreground); outline-offset: 2px; }
+.replay svg { width: 0.9rem; height: 0.9rem; }
+
+@media (max-width: 860px) {
+  .scene { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; margin-block: 4rem; }
+  .scene__text { position: static; }
+}
+
+/* ---- windows: terminal and vault pane ----------------------------------------------------------------- */
+.win {
+  --_edge: var(--talos-edge-subtle);
+  --_fill: hsl(0 0% 4% / 0.92);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.win__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  border-bottom: 1px solid var(--talos-edge-subtle);
+  font-family: var(--talos-font-display);
+  font-size: 0.64rem;
+  letter-spacing: var(--talos-tracking-hud-tight);
+  text-transform: uppercase;
+  color: var(--talos-muted-foreground);
+  min-width: 0;
+}
+.win__bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.win__bar svg { width: 0.85rem; height: 0.85rem; flex: none; }
+.win__body {
+  padding: 0.8rem 0.95rem 0.95rem;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.74rem;
+  line-height: 1.6;
+  color: hsl(var(--talos-foreground-hsl) / 0.86);
+  min-width: 0;
+}
+.win__body > * { margin: 0; }
+.tl { display: block; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 1.6em; }
+.tl--cmd::before { content: "$ "; color: var(--talos-muted-foreground); }
+.tl--cmd { padding-left: 2ch; text-indent: -2ch; }
+.tl--cmd > span.a-type { display: inline-block; max-width: calc(100% - 2ch); vertical-align: top; text-indent: 0; }
+.tl--muted { color: var(--talos-muted-foreground); }
+.tl--hit { color: var(--talos-foreground); }
+.tl--bad { color: hsl(var(--talos-danger-hsl)); }
+.tl--good { color: hsl(var(--talos-success-hsl)); }
+.tl--hl { background: hsl(var(--talos-foreground-hsl) / 0.07); box-shadow: inset 2px 0 0 var(--talos-foreground); }
+
+/* vault pane: a file tree and a note, Obsidian-like */
+.pane__body { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); min-width: 0; }
+.pane__tree {
+  border-right: 1px solid var(--talos-edge-subtle);
+  padding: 0.7rem 0.4rem;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--talos-muted-foreground);
+  font-family: var(--talos-font-body);
+}
+.pane__tree ul { list-style: none; margin: 0; padding: 0 0 0 0.7rem; }
+.pane__tree > ul { padding-left: 0; }
+.pane__tree li { display: block; }
+.pane__tree .f { display: flex; align-items: center; gap: 0.35rem; padding: 0.08rem 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pane__tree .f svg { width: 0.8rem; height: 0.8rem; flex: none; }
+.pane__tree .f.is-open { color: var(--talos-foreground); background: hsl(var(--talos-foreground-hsl) / 0.07); }
+.note { padding: 0.9rem 1.1rem 1.1rem; font-family: var(--talos-font-body); font-size: 0.8rem; line-height: 1.6; min-width: 0; }
+.note__props {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.1rem 0.9rem;
+  font-size: 0.7rem;
+  color: var(--talos-muted-foreground);
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid var(--talos-edge-subtle);
+}
+.note__props dd { margin: 0; color: hsl(var(--talos-foreground-hsl) / 0.8); overflow-wrap: anywhere; }
+.md { display: block; overflow-wrap: anywhere; }
+.md--h1 { font-family: var(--talos-font-display); font-weight: 400; font-size: 0.95rem; letter-spacing: 0.04em; margin: 0.1rem 0 0.4rem; }
+.md--h2 { font-family: var(--talos-font-display); font-weight: 400; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0.7rem 0 0.2rem; color: var(--talos-muted-foreground); }
+.md--p { color: var(--talos-muted-foreground); font-size: 0.74rem; }
+.md--task { padding-left: 1.45rem; text-indent: -1.45rem; }
+.md--quote { border-left: 2px solid var(--talos-edge-default); padding-left: 0.6rem; color: var(--talos-muted-foreground); font-size: 0.72rem; }
+.md .cb {
+  display: inline-grid;
+  place-items: center;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 0.6rem;
+  border: 1px solid var(--talos-edge-strong);
+  vertical-align: -0.12rem;
+  text-indent: 0;
+}
+.md .cb svg { width: 0.7rem; height: 0.7rem; }
+.md .cb--x { background: var(--talos-foreground); border-color: var(--talos-foreground); color: var(--talos-background); }
+.md--done .txt { color: var(--talos-muted-foreground); text-decoration: line-through; text-decoration-color: hsl(var(--talos-foreground-hsl) / 0.35); }
+.md .tag {
+  font-size: 0.92em;
+  padding: 0 0.35em;
+  background: hsl(var(--talos-foreground-hsl) / 0.08);
+  border: 1px solid var(--talos-edge-subtle);
+  white-space: nowrap;
+}
+.md .tag--ready { color: var(--talos-background); background: var(--talos-foreground); border-color: var(--talos-foreground); }
+.md .dw { color: var(--talos-foreground); font-weight: 500; }
+.md .meta { color: var(--talos-muted-foreground); white-space: nowrap; }
+.md .wl { color: var(--talos-foreground); border-bottom: 1px dotted var(--talos-edge-strong); }
+.md code, .win__body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.9em;
+  padding: 0 0.3em;
+  background: var(--talos-surface-2);
+  border-radius: var(--talos-radius-sm);
+}
+
+@media (max-width: 640px) {
+  .pane__body { grid-template-columns: minmax(0, 1fr); }
+  .pane__tree { display: none; }
+}
+
+/* ---- chips, badges, verdicts -------------------------------------------------------------------------- */
+.chip {
+  --_edge: var(--talos-edge-default);
+  --_fill: hsl(0 0% 6% / 0.95);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  font-family: var(--talos-font-display);
+  font-size: 0.64rem;
+  letter-spacing: var(--talos-tracking-hud-tight);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.chip svg { width: 0.85rem; height: 0.85rem; }
+.chip--solid { --_fill: var(--talos-foreground); --_edge: var(--talos-foreground); color: var(--talos-background); }
+.chip--bad { --_edge: hsl(var(--talos-danger-hsl)); color: hsl(var(--talos-danger-hsl)); --_fill: hsl(var(--talos-danger-hsl) / 0.08); }
+.chip--good { --_edge: hsl(var(--talos-success-hsl)); color: hsl(var(--talos-success-hsl)); --_fill: hsl(var(--talos-success-hsl) / 0.08); }
+.chip--warn { --_edge: hsl(var(--talos-warning-hsl)); color: hsl(var(--talos-warning-hsl)); --_fill: hsl(var(--talos-warning-hsl) / 0.08); }
+.chip--dim { color: var(--talos-muted-foreground); --_edge: var(--talos-edge-subtle); }
+.label {
+  font-family: var(--talos-font-display);
+  font-size: 0.62rem;
+  letter-spacing: var(--talos-tracking-hud);
+  text-transform: uppercase;
+  color: var(--talos-muted-foreground);
+}
+.flow { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.flow svg { width: 1rem; height: 1rem; color: var(--talos-muted-foreground); }

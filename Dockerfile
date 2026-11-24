@@ -7,13 +7,20 @@
 FROM oven/bun:1.2 AS build
 WORKDIR /app
 
+# The landing page is generated from the repo at build time (site/scripts/gen.ts): it runs the kit's hooks
+# (bash + jq) on fixtures and its scripts on a demo vault that is a git repo (git). The bun image has bash only.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends jq git \
+  && rm -rf /var/lib/apt/lists/*
+
 # Install deps with the lockfile for reproducible builds. Copy manifests first so the dependency layer
 # caches independently of content changes.
 COPY package.json bun.lock ./
 COPY site/package.json site/
 RUN bun install --frozen-lockfile
 
-# Copy the rest and build the static site. The pages are rendered from docs/, so it is part of the context.
+# Copy the rest and build the static site. The pages are rendered from docs/, and the landing page from docs/,
+# README.md and payload/, so the whole repo is the context.
 COPY . .
 RUN bun run build
 

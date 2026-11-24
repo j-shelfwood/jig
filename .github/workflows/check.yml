@@ -19,8 +19,8 @@ jobs:
         run: bash payload/claude/hooks/tests/run-all.sh
       - name: Install site dependencies
         run: bun install --frozen-lockfile
-      - name: Site plugin tests
-        run: bun test site/src
+      - name: Site tests (plugins and the landing-page generator)
+        run: bun test site/src site/scripts
       - name: Build site
         run: bun run build
       - name: Site links

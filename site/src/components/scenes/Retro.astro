@@ -1,0 +1,106 @@
+---
+// Scene: Retro and guardrails. trace.ts clusters (run at build time on synthetic transcripts) shows a push
+// rejection that recurs; the retro's fix is the git-push-guard hook, with its own Why line and its fixture
+// suite result. Then the hooks at work: their real decisions on two calls, produced by running the scripts
+// on those calls at build time. Below: every hook wired in payload/claude/settings.json.
+import { Icon } from "astro-icon/components";
+import Scene from "./Scene.astro";
+import type { Kit } from "../../../scripts/gen";
+interface Props { kit: Kit }
+const { kit } = Astro.props;
+const r = kit.scenes.retro;
+const clusters = kit.demo.runs.clusters;
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const T = 2600;
+const badge: Record<string, string> = { deny: "chip--bad", ask: "chip--warn", block: "chip--bad", context: "chip--dim" };
+---
+<Scene id="retro" steps={[r.step]}>
+  <div class="rtgrid">
+    <div class="win talos-chamfer">
+      <div class="win__bar"><Icon name="lucide:activity" aria-hidden="true" /><span>weekly retro · transcripts of the last 30 days</span></div>
+      <div class="win__body">
+        <span class="tl tl--cmd"><span class="a a-type" style={`--d:200ms;--t:900ms;--steps:${clusters.cmd.length}`}>{clusters.cmd}</span></span>
+        {clusters.out.split("\n").map((l, i) => (
+          <span class:list={["tl a a-fade", l.startsWith("#") && "tl--muted", /push/.test(l) && "tl--hl"]} style={`--d:${1300 + i * 250}ms`}>{l}</span>
+        ))}
+      </div>
+    </div>
+    <div class="fix talos-chamfer a a-fade" style={`--d:${T}ms`}>
+      <span class="flow"><span class="label">Recurring cluster</span><Icon name="lucide:arrow-right" aria-hidden="true" /><span class="label">fix with a destination: a hook</span></span>
+      <p class="fix__name"><Icon name="lucide:shield" aria-hidden="true" /><code>hooks/{r.fix.hook}.sh</code></p>
+      <p class="fix__what">{cap(r.fix.what)}</p>
+      <p class="fix__why"><span class="label">Why</span> {cap(r.fix.why)}</p>
+      <p class="fix__test a a-fade" style={`--d:${T + 900}ms`}><Icon name="lucide:check" aria-hidden="true" /><code>{r.fix.tests}</code></p>
+    </div>
+  </div>
+  <div class="win talos-chamfer" id="guardrails">
+    <div class="win__bar"><Icon name="lucide:shield-alert" aria-hidden="true" /><span>next session · the hooks answer before the tool runs</span></div>
+    <div class="win__body">
+      {r.blocks.map((b, i) => {
+        const t = T + 1800 + i * 2200;
+        return (
+          <div class="blk">
+            <span class="tl tool a a-fade" style={`--d:${t}ms`}>● {b.call}</span>
+            <span class="tl a a-fade" style={`--d:${t + 700}ms`}>  ⎿ <span class={`chip talos-chamfer talos-chamfer--flag ${badge[b.run.decision] ?? "chip--dim"}`}>{b.run.decision}</span> <span class="tl--muted">PreToolUse hook {b.run.hook}.sh</span></span>
+            <span class="tl reason a a-fade" style={`--d:${t + 1100}ms`}>{b.run.reason}</span>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+  <div class="hooks">
+    <p class="label">The {kit.hooks.length} hooks, from payload/claude/settings.json</p>
+    <div class="hooks__scroll">
+      <table>
+        <thead><tr><th>hook</th><th>on</th><th>decides</th><th>why</th></tr></thead>
+        <tbody>
+          {kit.hooks.map((h) => (
+            <tr>
+              <td><code>{h.name}</code><span class="hooks__what">{cap(h.what)}</span></td>
+              <td>{h.event}{h.matcher && <span class="hooks__m">{h.matcher}</span>}</td>
+              <td>{h.decisions.map((d) => <span class={`chip talos-chamfer talos-chamfer--flag ${badge[d] ?? "chip--dim"}`}>{d}</span>)}</td>
+              <td class="hooks__why">{cap(h.why)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Scene>
+
+<style>
+  .rtgrid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 0.8rem; align-items: stretch; }
+  @media (max-width: 1000px) { .rtgrid { grid-template-columns: minmax(0, 1fr); } }
+  .fix { --_edge: var(--talos-edge-strong); --_fill: hsl(0 0% 6% / 0.95); padding: 0.9rem 1rem; display: grid; gap: 0.55rem; align-content: start; }
+  .fix p { margin: 0; font-family: var(--talos-font-body); font-size: 0.82rem; line-height: 1.5; }
+  .fix__name { display: flex; gap: 0.5rem; align-items: center; }
+  .fix__name :global(svg), .fix__test :global(svg) { width: 1rem; height: 1rem; flex: none; }
+  .fix__name code { font-size: 0.85rem; }
+  .fix__why { color: hsl(var(--talos-foreground-hsl) / 0.78); }
+  .fix__test { display: flex; gap: 0.4rem; align-items: center; color: hsl(var(--talos-success-hsl)); }
+  .fix__test code { font-size: 0.72rem; }
+  .blk { display: grid; padding-block: 0.35rem; }
+  .blk + .blk { border-top: 1px dashed var(--talos-edge-subtle); }
+  .tool { color: var(--talos-foreground); }
+  .reason { padding-left: 2.2ch; color: hsl(var(--talos-foreground-hsl) / 0.8); }
+  .hooks { display: grid; gap: 0.6rem; }
+  .hooks .label { margin: 0; }
+  .hooks__scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.78rem; font-family: var(--talos-font-body); min-width: 40rem; }
+  th { text-align: left; font-family: var(--talos-font-display); font-weight: 400; font-size: 0.6rem; letter-spacing: var(--talos-tracking-hud); text-transform: uppercase; color: var(--talos-muted-foreground); padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--talos-edge-default); }
+  td { vertical-align: top; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--talos-edge-subtle); line-height: 1.45; }
+  td code { font-size: 0.75rem; }
+  .hooks__what, .hooks__m { display: block; margin-top: 0.2rem; color: var(--talos-muted-foreground); font-size: 0.72rem; }
+  .hooks__m { font-family: ui-monospace, Menlo, monospace; font-size: 0.66rem; overflow-wrap: anywhere; }
+  .hooks__why { color: hsl(var(--talos-foreground-hsl) / 0.78); }
+  td .chip { margin: 0 0.25rem 0.25rem 0; }
+  @media (max-width: 640px) {
+    table { min-width: 0; }
+    thead { display: none; }
+    tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.3rem 0.8rem; padding: 0.75rem 0; border-bottom: 1px solid var(--talos-edge-subtle); }
+    td { padding: 0; border: 0; }
+    td:nth-child(1) { grid-column: 1; }
+    td:nth-child(3) { grid-column: 2; grid-row: 1; }
+    td:nth-child(2), td:nth-child(4) { grid-column: 1 / -1; }
+  }
+</style>

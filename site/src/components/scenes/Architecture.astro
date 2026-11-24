@@ -1,0 +1,127 @@
+---
+// Architecture: the layers as an interactive diagram. Nodes and edges are the mermaid flowchart of
+// docs/architecture.md; each node's panel shows its rows of the layer table and what is in the kit there
+// (routing lines, imports, skills, workers, hooks, vault folders), all from kit.json. Node positions live in
+// NODE_VIEW (site/scripts/kit/architecture.ts), which the generator checks against the flowchart.
+import { Icon } from "astro-icon/components";
+import type { Kit } from "../../../scripts/gen";
+interface Props { kit: Kit }
+const { kit } = Astro.props;
+const { nodes, edges, description } = kit.arch;
+const pos = Object.fromEntries(nodes.map((n) => [n.id, n.at]));
+const lines = (mobile: boolean) =>
+  edges.map((e, i) => {
+    const a = pos[e.from]!, b = pos[e.to]!;
+    const [x1, y1, x2, y2] = mobile ? [a[2], a[3], b[2], b[3]] : [a[0], a[1], b[0], b[1]];
+    return { ...e, i, x1, y1, x2, y2 };
+  });
+const first = nodes[0]!.id;
+// Edge labels sit 60% of the way to the target, clear of the row of nodes an edge may pass between.
+const at = (a: number, b: number) => (a + 0.6 * (b - a)).toFixed(1);
+---
+<section class="scene arch" id="architecture" data-scene aria-labelledby="architecture-h">
+  <div class="scene__text">
+    <span class="talos-eyebrow">// The machinery</span>
+    <h2 id="architecture-h">Architecture</h2>
+    <p>{description}</p>
+    <p class="talos-muted hint">Select a layer to see what the kit puts there.</p>
+    <div class="scene__actions">
+      <a href="/docs/architecture/">The architecture in full</a>
+      <button type="button" class="replay" data-replay aria-controls="architecture-stage"><Icon name="lucide:rotate-ccw" aria-hidden="true" /> Replay</button>
+    </div>
+  </div>
+  <div class="scene__stage" id="architecture-stage" data-arch data-active={first}>
+    <div class="map">
+      {[false, true].map((mobile) => (
+        <svg class:list={["map__edges", mobile ? "map__edges--m" : "map__edges--d"]} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          {lines(mobile).map((l) => (
+            <line x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} pathLength="100" class:list={["edge a", l.dashed ? "edge--dashed a-fade" : "a-draw"]} data-from={l.from} data-to={l.to} style={`--d:${300 + l.i * 350}ms;--t:700ms;--len:100`} />
+          ))}
+        </svg>
+      ))}
+      {lines(false).map((l, i) => {
+        const m = lines(true)[i]!;
+        return <span class="map__elabel a a-fade" style={`--x:${at(l.x1, l.x2)}%;--y:${at(l.y1, l.y2)}%;--mx:${at(m.x1, m.x2)}%;--my:${at(m.y1, m.y2)}%;--d:${600 + l.i * 350}ms`} aria-hidden="true">{l.label}</span>;
+      })}
+      <div role="tablist" aria-label="Layers of the setup" class="map__nodes">
+        {nodes.map((n, i) => (
+          <button type="button" role="tab" id={`arch-tab-${n.id}`} aria-controls={`arch-panel-${n.id}`} aria-selected={String(n.id === first)} tabindex={n.id === first ? 0 : -1} data-node={n.id}
+            class="node talos-chamfer talos-chamfer--md a a-pop" style={`--x:${n.at[0]}%;--y:${n.at[1]}%;--mx:${n.at[2]}%;--my:${n.at[3]}%;--d:${i * 120}ms`}>
+            <Icon name={n.icon} aria-hidden="true" />
+            <span class="node__t">{n.title}</span>
+            <span class="node__l">{n.lines.join(" ")}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+    {nodes.map((n) => (
+      <div class="panel talos-chamfer" role="tabpanel" id={`arch-panel-${n.id}`} aria-labelledby={`arch-tab-${n.id}`} hidden={n.id !== first}>
+        <p class="panel__t"><Icon name={n.icon} aria-hidden="true" />{n.title} {n.lines.join(" ")}</p>
+        <dl class="panel__layers">
+          {n.layers.map((l) => (
+            <div>
+              <dt>{l.layer}</dt>
+              <dd><span set:html={l.files} /> · <span class="talos-muted">loads</span> <span set:html={l.loads} /></dd>
+              <dd class="talos-muted" set:html={l.owns} />
+            </div>
+          ))}
+        </dl>
+        {n.items.length > 0 && (
+          <>
+            <p class="label">In the kit ({n.items.length})</p>
+            <ul class="panel__items">{n.items.map((x) => <li set:html={x} />)}</ul>
+          </>
+        )}
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .hint { font-size: 0.8rem; }
+  .map { position: relative; aspect-ratio: 16 / 9; min-height: 20rem; }
+  .map__edges { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; overflow: visible; }
+  .map__edges--m { display: none; }
+  .edge { stroke: var(--talos-edge-strong); stroke-width: 1.2; vector-effect: non-scaling-stroke; stroke-dasharray: 100; }
+  .edge--dashed { stroke-dasharray: 4 4; stroke: var(--talos-muted-foreground); }
+  .map__elabel {
+    position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%);
+    font-family: ui-monospace, Menlo, monospace; font-size: 0.64rem; color: var(--talos-muted-foreground);
+    background: var(--talos-background); padding: 0 0.3rem; white-space: nowrap; pointer-events: none;
+  }
+  .map__nodes { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+  .map__elabel { z-index: 1; }
+  .node {
+    --_edge: var(--talos-edge-default);
+    --_fill: hsl(0 0% 5% / 0.96);
+    position: absolute; left: var(--x); top: var(--y); translate: -50% -50%;
+    display: grid; justify-items: center; gap: 0.15rem;
+    width: 9.5rem; padding: 0.55rem 0.5rem;
+    color: var(--talos-foreground); font: inherit; cursor: pointer; text-align: center; pointer-events: auto;
+  }
+  .node :global(svg) { width: 1rem; height: 1rem; color: var(--talos-muted-foreground); }
+  .node__t { font-family: ui-monospace, Menlo, monospace; font-size: 0.7rem; }
+  .node__l { font-family: var(--talos-font-body); font-size: 0.66rem; color: var(--talos-muted-foreground); line-height: 1.3; }
+  .node:hover { --_edge: var(--talos-edge-strong); }
+  .node[aria-selected="true"] { --_edge: var(--talos-foreground); --_fill: hsl(0 0% 13%); }
+  .node[aria-selected="true"] :global(svg) { color: var(--talos-foreground); }
+  .node:focus-visible { outline: 2px solid var(--talos-foreground); outline-offset: 3px; }
+  .panel { --_edge: var(--talos-edge-subtle); --_fill: hsl(0 0% 4% / 0.92); padding: 0.9rem 1.1rem; display: grid; gap: 0.7rem; font-family: var(--talos-font-body); font-size: 0.82rem; }
+  .panel[hidden] { display: none; }
+  .panel p { margin: 0; }
+  .panel__t { display: flex; gap: 0.5rem; align-items: center; font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; }
+  .panel__t :global(svg) { width: 1rem; height: 1rem; }
+  .panel__layers { margin: 0; display: grid; gap: 0.6rem; }
+  .panel__layers dt { font-family: var(--talos-font-display); font-size: 0.66rem; letter-spacing: var(--talos-tracking-hud-tight); text-transform: uppercase; }
+  .panel__layers dd { margin: 0.15rem 0 0; line-height: 1.5; }
+  .panel__items { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.3rem; line-height: 1.5; color: hsl(var(--talos-foreground-hsl) / 0.84); }
+  .panel :global(code) { font-size: 0.85em; }
+  @media (max-width: 640px) {
+    .map { aspect-ratio: 2 / 3; min-height: 0; }
+    .map__edges--d { display: none; }
+    .map__edges--m { display: block; }
+    .map__elabel { left: var(--mx); top: var(--my); font-size: 0.58rem; }
+    .node { left: var(--mx); top: var(--my); width: 8.6rem; padding: 0.45rem 0.4rem; }
+    .node__l { font-size: 0.6rem; }
+  }
+</style>
