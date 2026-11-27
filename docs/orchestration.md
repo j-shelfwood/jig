@@ -1,6 +1,6 @@
 ---
 title: Orchestration
-description: "Running many agents without watching each one: fan-out, worktrees, a chat channel per project, an event router, tracing."
+description: "Running many agents without watching each one: fan-out, worktrees, a chat channel per project, one local app that owns gates and events, tracing."
 ---
 
 How Joris runs many agents at once without watching each one. It is level 3 of the [[method#Autonomy levels|autonomy levels]]. This is the most custom part of the setup: copy the **patterns**, build the pieces only when stage 1 and 2 are routine.
@@ -66,7 +66,7 @@ Agents need a place to ask you things that reaches your phone. Joris self-hosts 
 - You answer in the post's thread, from your phone. The reply comes back to the agents as an event ([[#3.5 Events start agents: the fleet|3.5]]).
 - Two identities: agents post as the bot; a separate **read-only** connection reads your own unread messages and rejects writes. Your personal token is never used to post.
 - A gate in code (a hook on every chat write) checks that the bot only writes in a channel where you and it are the only members.
-- **Outbox**: mail an agent prepared in an unwatched session is posted to an outbox channel with the exact send; you approve, reject or comment there, and only then does a session send it, still behind the harness prompt.
+- **Outbox**: every outgoing mail an agent prepares waits as an outbox item with the exact send (recipients, subject, body). You approve, reject or comment, in an outbox channel or in the app's inbox; only the session that claims your approval sends it, still behind the harness prompt, and records the sent message id. The outbox is part of the local app ([[#3.5 Events start agents: the fleet|3.5]]), so "was this mail sent?" has one answer.
 
 The round trip of one Decision:
 
@@ -75,7 +75,7 @@ sequenceDiagram
     participant A as Agent thread
     participant C as Project channel
     participant Y as You (phone)
-    participant R as Router
+    participant R as Local app
     A->>C: Decision post: question,<br/>recommended option, thread link
     Note over A: goes on with everything<br/>the decision does not block
     Y->>C: reply in the post's thread
@@ -89,32 +89,74 @@ Any chat tool with a bot API works (Slack, Discord, Matrix, Telegram). What matt
 
 Instead of one long-running orchestrator, every event starts a **fresh, short-lived thread** (decision D4 in Joris's fleet: a fresh thread is short and always reads the current project brief, so the hand-over between runs and the check for an outdated brief could both be deleted). The cost, recorded in the same design notes: every thread reads the conversation cold and paraphrases it, so what a post must carry has to be written down.
 
+Deciding what an event means, and which outward actions may happen, belongs to **one local app**. Agents, hooks and the UI talk to it over HTTP; none of them decides.
+
 ```mermaid
 flowchart TD
     SRC["webhooks: GitHub, error tracker,<br/>board, mail push, chat replies"]
     IN["ingress: always-on buffer<br/>checks signatures, stores raw,<br/>no routing"]
-    RT["router on the laptop<br/>pull + ack, picks the owner project,<br/>batches per project (120 s)"]
+    SEN["sensor: reads the local stores<br/>the OS guards (chat, transcripts),<br/>posts raw rows"]
+    APP["local app (event-sourced)<br/>routing, batching, decisions,<br/>outbox and action ledger, waits,<br/>audit, trace, ownership"]
     T["fresh agent thread<br/>reads event ids, discovers context,<br/>acts under the project brief"]
+    HK["harness hooks<br/>ask the app over HTTP"]
+    UI["UI: inbox, live feed, trace<br/>renders the app's API"]
     PR["PR, draft, vault write"]
-    DC["Decision post in<br/>the project channel"]
-    SRC --> IN --> RT --> T
+    DC["Decision post or outbox item"]
+    SRC --> IN -- "pull + ack" --> APP
+    SEN --> APP
+    APP --> T
     T --> PR
-    T --> DC
-    DC -- "your reply = next event" --> RT
+    T --> DC --> APP
+    HK -- "may this happen?" --> APP
+    APP --> UI
+    UI -- "your answer = next event" --> APP
 ```
 
-Design rules worth copying:
+### One owner per question
 
-- The ingress holds no logic; the router is event-sourced, so a replay rebuilds its state without re-running actions.
+The first version of this was a set of loose scripts: a router, an outbox CLI, a trace builder, an audit, each reading and writing its own files. It worked until the scripts disagreed. "Was this mail sent?", "what waits on me?" and "is this decision settled?" each had three to six answers (a script, a hook's own ledger, a line in the brief, a port of the script in the router), and an agent acted on whichever it read. The fix was ownership, not language: one app answers each question, and everything else asks it.
+
+| concern | owner | the others |
+|---|---|---|
+| routing, batching, which thread owns a subject | the local app | the sensor posts raw rows; it derives no project |
+| outgoing mail and other outward actions (merge, deploy, delete) | the app's outbox and action ledger: each action has a recorded basis, an approval, and the id of what it did | a hook asks the app before a send; an agent never sends what has no basis |
+| what waits on you, whether a Decision is settled | the app's event log | the UI and the agents read it over the API |
+| project state (tasks, decisions, handoffs) | the vault | the app reads and writes it as a storage disk, with the same rules as an agent |
+| gates every session needs (push, merge, destructive git, the text rules of a send) | local hooks | they keep working with the app down |
+
+### Design rules worth copying
+
+- **Events first.** The app is event-sourced: every answer it gives is an event in its store, so a replay rebuilds its state without re-running actions, and an audit reads the same log.
+- **The vault and the state folder are storage disks** of the app, not databases of their own. Nothing else writes to the state folder.
+- **Agents and hooks talk HTTP through one thin client** (`curl` from bash is enough), never by booting the app's CLI from a worktree: a worktree carries test settings, and a CLI boot is slower than a local request.
+- **A fail policy per endpoint.** With the app down, a send from a dispatched session is denied; in a session you are watching, the app's half of the gate falls back to your permission prompt. Decision posts spool locally and post when it is back. Reads serve the last snapshot.
+- **Gates that guard every session stay local**: they must not depend on the app being up, and a gate that blocks when the app is down would also block its repair.
+- **The ingress holds no logic**: it checks signatures, stores the raw request and waits to be pulled.
+- **The UI is a front end.** It renders what the app's API returns. The one thing it does besides that is act as the sensor for stores the OS lets only a signed app read (a chat app's database, a transcription app's files): it reads them and posts raw rows, and the app classifies them.
+- **Parity, then delete.** When logic moves from a script into the app, the old script is deleted in the same change, after a parity check by an agent that did not write the replacement. Two strategies running side by side are how the six answers came about.
 - Threads you started yourself are yours: the fleet never sends into them.
-- A count-triggered **audit** (after N events in a project) checks the agents' own recent work, and a weekly status run drafts the client update for approval.
+- A count-triggered **audit** (after N events in a project) checks the agents' own recent work, and a weekly status run drafts the client update, as an outbox item.
 - No model runs while nothing happens.
 
-Joris's implementation is three repos (a Laravel buffer, a Laravel router, a Bun umbrella with the brief and a desktop app). It is a lot of machinery; a cron job that runs `claude -p "work the next #agent-ready task in <repo>"` once an hour is a reasonable first version of the same idea.
+A hook that needs the app asks it in a few lines of bash; the answer is the decision, and the fail policy decides when there is no answer:
+
+```bash
+# PreToolUse hook, fleet half of a send gate: ask the local app, fall back per the fail policy.
+ANS=$(curl -sS -m 2 -H "Authorization: Bearer $APP_TOKEN" -H 'Content-Type: application/json' \
+  -d "$(jq -c '{tool: .tool_name, tool_input}' <<<"$INPUT")" http://localhost:8000/api/actions/check) || ANS=''
+if [ -z "$ANS" ]; then
+  [ -n "$DISPATCHED" ] && DECISION=deny || DECISION=ask   # app down: deny unattended, ask when watched
+else
+  DECISION=$(jq -r '.decision' <<<"$ANS")                 # allow | ask | deny, with .reason
+fi
+```
+
+Joris's implementation is three repos: a Laravel webhook buffer on a server; a Laravel app on the laptop (event sourcing on Postgres, run by launchd, pushing changes to the UI over websockets) that owns every gate and event-driven behaviour above; and a repo with the fleet brief and the desktop app (inbox, live feed, trace views), which is the front end and the sensor. It is a lot of machinery; a cron job that runs `claude -p "work the next #agent-ready task in <repo>"` once an hour is a reasonable first version of the same idea. When you outgrow it, start the app with the outbox: it is the question whose wrong answer costs most.
 
 ## 3.6 Seeing what happened: trace and health
 
-- **Session trace**: a parser over `~/.claude/projects/**/*.jsonl` (and subagent transcripts) producing events, stats and a per-project brief. Here: `bun ~/.claude/scripts/trace.ts sessions --since 7d` (per-session tool calls, errors, hook denials, interrupts, rejections) and `trace.ts clusters` (recurring error signatures, the input of the `retro` skill). Joris's own `claude-trace` and Fleet Trace app add a UI over the same data.
+- **Session trace**: a parser over `~/.claude/projects/**/*.jsonl` (and subagent transcripts) producing events, stats and a per-project brief. Here: `bun ~/.claude/scripts/trace.ts sessions --since 7d` (per-session tool calls, errors, hook denials, interrupts, rejections) and `trace.ts clusters` (recurring error signatures, the input of the `retro` skill). Joris's own `claude-trace` adds a UI over the same data.
+- **Fleet trace**: once the local app exists, its event log is the trace of the fleet: which event started which thread, what it changed, what waits on you. The UI reads it from the app's API and decides nothing.
 - **Doctor**: reads the `health` line of every capability file at session start and prints only the red rows, so an agent knows a service is down before it tries it. Here: `~/.claude/scripts/doctor.ts`, run by the `session-start-doctor.sh` hook.
 - **Estate status**: one command that reports the health of every deployed service; agents run it before any curl or ssh, because ad-hoc probing produced false alarms.
 - **Agent queue**: a script lists open tracker lines tagged `#agent-ready` with a `done when:` line, sorted by priority. That list is what an unattended agent may pick up. Here: `bun ~/.claude/scripts/agent-queue.ts`.
@@ -126,4 +168,4 @@ Joris's implementation is three repos (a Laravel buffer, a Laravel router, a Bun
 3. Worktrees per editing lane.
 4. A bot + one private channel per project for Decision posts.
 5. A scheduled run per project that works the queue.
-6. Only then: webhooks, a router, a trace UI.
+6. Only then: webhooks into a buffer, one local app that owns the gates and events (start with the outbox), a UI over its API.

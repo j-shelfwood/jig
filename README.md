@@ -45,7 +45,7 @@ flowchart TD
 |---|---|---|
 | 1. Core | a global `CLAUDE.md` that `@`-imports your working rules from your vault; an output style; six typed workers; a session-start skill; a vault schema with templates and Bases views | `payload/claude/`, `payload/vault/` |
 | 2. Guardrails | 7 hooks with fixture tests (typed spawns only, vault write gate, push guard, destructive git, operator report gate, outbound ask, session-start doctor); 4 bun scripts (agent queue, vault lint, capability doctor, transcript trace); skills for a weekly retro, memory cleanup and prompt audits; a capability registry; a dispatch contract for unattended agents | `payload/claude/hooks/`, `payload/claude/scripts/`, `payload/claude/skills/` |
-| 3. Orchestration | the patterns for parallel lanes in git worktrees, a private chat channel per project for agent questions, an event router that starts fresh agents from webhooks, and tracing | `docs/orchestration.md` (patterns, not installed) |
+| 3. Orchestration | the patterns for parallel lanes in git worktrees, a private chat channel per project for agent questions, fresh agents started by events, and one local app that owns every gate and event (routing, the mail outbox, waits, audit, trace) with hooks and a UI talking to it over HTTP | `docs/orchestration.md` (patterns, not installed) |
 
 ## Read first
 
@@ -63,6 +63,7 @@ flowchart TD
 - **A subagent's finding is not evidence** until the main agent or a `verifier` re-derives it.
 - **Reversible work is done; irreversible work is asked once,** as a question with a recommended option. The split comes from counting which prompts were actually rejected.
 - **Two state stores:** auto-memory for how to work, the vault for project state. Messages are read live, never copied.
+- **One owner per question.** Once events start agents, one local app decides the gates and events; hooks, agents and the UI ask it over HTTP, and every outgoing mail waits in its outbox for your approval.
 - **Close the loop:** a weekly retro over your own transcripts turns recurring friction into hooks and doc fixes.
 
 ## Repository checks
