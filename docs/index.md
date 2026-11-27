@@ -17,7 +17,7 @@ description: "An operating method and a kit for having Claude Code agents do you
 | [[method]] | the way of working: intake, shape, dispatch, verify, decide, record, retro |
 | [[architecture]] | the layers, one owner per concern, why the prompt files live in the vault |
 | [[prompting-strategies]] | 13 prompting rules, each with the failure it prevents |
-| [[orchestration]] | running many agents without watching each one: worktrees, a chat channel, an event router |
+| [[orchestration]] | running many agents without watching each one: worktrees, a chat channel, one local app that owns gates and events |
 | [[install]] | how the setup reaches your machine |
 
 ## Where it comes from

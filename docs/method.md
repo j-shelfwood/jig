@@ -104,7 +104,7 @@ Move up one level only when the level below runs without you correcting it.
 | 0 Assisted | nothing; every step is approved | Claude Code |
 | 1 Reversible | commits, local files, drafts, feature-branch pushes; reported with the undo command | the approvals split in your working principles, the push guard hook |
 | 2 Queue | work `#agent-ready` lines to their `done when:` in a session you start | trackers with observables, typed workers, verification habit |
-| 3 Unattended | the same, started by a schedule or an event, with questions sent to a channel you read on your phone | the dispatch contract, worktrees, a bot channel ([[orchestration\|stage 3]]) |
+| 3 Unattended | the same, started by a schedule or an event, with questions sent to a channel you read on your phone | the dispatch contract, worktrees, a bot channel, an outbox where every outgoing mail waits for you ([[orchestration\|stage 3]]) |
 
 > [!warning] Do not skip a level
 > Unattended agents amplify whatever the level below does. If level 2 still needs you to correct reports, level 3 produces those reports while you sleep.
@@ -122,6 +122,7 @@ Measure the method by where your attention goes, not by how much the agents do.
 
 > [!failure] What this method rules out
 > - **A long-lived orchestrator thread.** It works from whatever brief and state it read when it started. Fresh, short threads read the current brief and handoff every time, so nothing has to keep a long thread up to date.
+> - **Gate and event logic spread over scripts.** When a router script, an outbox CLI and a hook each keep their own record of what was sent, they disagree, and an agent acts on whichever it read. One local app owns each question; hooks and agents ask it over HTTP.
 > - **A list of questions at the end of a reply.** You have to re-derive the call the agent was best placed to make. One question per decision, recommendation first.
 > - **Trusting the green suite.** Tests pass on code that does not do the thing. Observe the running system.
 > - **Copying messages into notes.** The copy goes stale; read the channel live and record only the decision.

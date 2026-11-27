@@ -33,8 +33,8 @@ flowchart TD
 | skills | `~/.claude/skills/<name>/SKILL.md` | when its `description` triggers | a procedure for one recurring job (session start, inbox triage, a review) |
 | capabilities | `~/.claude/capabilities/<service>.md` | when the service is touched | how to reach one service: CLI/MCP/API, which identity, where the secret is (by reference), a health command, known failures |
 | typed agents | `~/.claude/agents/<name>.md` | when spawned | one role, a tool allowlist, a model, a fixed report format |
-| hooks | `~/.claude/hooks/*.sh` wired in `settings.json` | on every matching tool call | rules that must hold even when the model forgets them |
-| scripts | `~/.claude/scripts/*.ts` (bun) | run by skills, hooks or you | the agent queue, vault lint, capability doctor and transcript trace (`payload/claude/scripts/README.md`) |
+| hooks | `~/.claude/hooks/*.sh` wired in `settings.json` | on every matching tool call | rules that must hold even when the model forgets them; plain bash. A rule that needs fleet state asks the local app over HTTP (stage 3, below) |
+| scripts | `~/.claude/scripts/*.ts` (bun) | run by skills, hooks or you | the agent queue, vault lint, capability doctor and transcript trace (`payload/claude/scripts/README.md`): helpers that read and report. Gate and event logic does not go here |
 | dispatch contract | `~/.claude/dispatch-protocol.md` | pasted into the brief of any agent that runs unattended | how to behave when nobody watches: no approval-needing commands, fixed report, vault write-back |
 | auto-memory | `~/.claude/projects/<slug>/memory/` | per working directory | facts about how to work: tool quirks, access paths, preferences |
 | vault | Obsidian | read through files or Bases | project state: tasks, decisions, hand-offs, people, dated analyses |
@@ -65,6 +65,29 @@ Full version in `payload/vault/Constitution/vault-schema.md`. The parts agents d
 - **Decisions** are one note each in `decisions/`, never edited; a change is a new note with `supersedes:`. This is what stops agents re-proposing what you already rejected.
 - **Handoff** per project: one screen, sections rewritten whole, the first thing a new session reads.
 - **Agent write rules**: line-targeted edits, read right before writing, commit by path (several sessions share the checkout), never `git add -A`.
+
+## Stage 3: one local app owns gates and events
+
+Stages 1 and 2 need no server: files, hooks and scripts. Once events start agents ([[orchestration#3.5 Events start agents: the fleet|orchestration 3.5]]), the questions that span sessions ("was this mail sent?", "what waits on me?", "which thread owns this PR?") need one owner, or every script answers them its own way. That owner is one local, event-driven app.
+
+```mermaid
+flowchart LR
+    HK["hooks (bash)"] -- "HTTP: may this happen?" --> APP["local app<br/>gates, events, outbox,<br/>waits, audit, trace"]
+    AGT["agents"] -- "HTTP: record, claim, report" --> APP
+    UI["UI (front end, sensor)"] -- "HTTP: read, answer" --> APP
+    APP -- "storage disk" --> VLT["vault"]
+    APP -- "storage disk" --> ST["state folder"]
+```
+
+| piece | owns | never |
+|---|---|---|
+| local app | every gate and event-driven behaviour of the fleet: routing, batching, Decisions, the outbox and action ledger, waits, audit, trace, ownership claims | runs as an agent; asks you anything except through the outbox and Decision posts |
+| hooks | the gates every session needs, locally; for fleet concerns, one `curl` to the app and a fail policy for when it is down | carry fleet logic of their own (a Python or TypeScript copy of what the app decides) |
+| agents | the work; they record actions and claim approvals through the app's API | send a mail that is not an approved outbox item |
+| UI | rendering the app's API; reading the local stores the OS guards and posting raw rows | decide, classify or keep state |
+| vault, state folder | the app's storage disks | get written by anything but the app (state) or the vault rules (vault) |
+
+Every outgoing mail waits in the app's outbox for your approval, including through a migration: when logic moves into the app, the outbox keeps working the whole way.
 
 ## First week
 
